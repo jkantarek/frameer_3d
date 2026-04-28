@@ -31,16 +31,16 @@ Convention within every `F###` group:
 
 ### P001F001 — Runtime Dependencies
 
-- [ ] P001F001T001 Run `pnpm add three opencascade.js tweakpane @tweakpane/plugin-essentials` and `pnpm add -D @types/three` and confirm all packages resolve in `package.json`
+- [x] P001F001T001 Run `pnpm add three opencascade.js tweakpane @tweakpane/plugin-essentials` and `pnpm add -D @types/three` and confirm all packages resolve in `package.json`
 
 ### P001F002 — Vite Configuration
 
-- [ ] P001F002T001 [P] Add `Cross-Origin-Resource-Policy: cross-origin` to `server.headers` and `preview.headers` in `vite.config.ts`; add `optimizeDeps: { exclude: ['opencascade.js'] }` to prevent Vite from pre-bundling the WASM artifact
+- [x] P001F002T001 [P] Add `Cross-Origin-Resource-Policy: cross-origin` to `server.headers` and `preview.headers` in `vite.config.ts`; add `optimizeDeps: { exclude: ['opencascade.js'] }` to prevent Vite from pre-bundling the WASM artifact
 
 ### P001F003 — HTML + CSS Layout Shell
 
-- [ ] P001F003T001 [P] Replace `<canvas id="app">` in `index.html` with full DOM: `#viewport-container` (`flex: 2`) containing `<canvas id="viewport" role="img" aria-label="3D viewport">`; then `#drag-handle` (`role="separator" aria-orientation="vertical" aria-valuenow="0"`); then `#scene-controls` containing `<button id="toggle-pane" aria-expanded="false" aria-label="Toggle control pane">☰</button>` as its first child — this toggle button is required by P004F002/P004F003 and must exist in the DOM before any P004 wiring
-- [ ] P001F003T002 [P] Create `src/style.css` with full-screen flexbox layout: `body { display: flex; height: 100dvh; overflow: hidden; margin: 0 }`; `#viewport-container { flex: 2; position: relative; min-width: 0 }`; `canvas { width: 100%; height: 100%; display: block }`; `#scene-controls { flex: 0 0 var(--pane-width, calc(100vw / 3)); min-width: 200px; max-width: 50vw; overflow-y: auto }` — using `flex: 0 0 var(--pane-width, ...)` instead of `flex: 1` so P004's `DragHandle` can resize the pane by writing `--pane-width` via `style.setProperty`; `#scene-controls[data-collapsed="true"] { flex: 0 0 32px; min-width: 32px; overflow: hidden }` — required by P004F002 collapse toggle; `#drag-handle { width: 6px; cursor: col-resize; background: #333 }`; import `./style.css` in `src/main.ts`
+- [x] P001F003T001 [P] Replace `<canvas id="app">` in `index.html` with full DOM: `#viewport-container` (`flex: 2`) containing `<canvas id="viewport" role="img" aria-label="3D viewport">`; then `#drag-handle` (`role="separator" aria-orientation="vertical" aria-valuenow="0"`); then `#scene-controls` containing `<button id="toggle-pane" aria-expanded="false" aria-label="Toggle control pane">☰</button>` as its first child — this toggle button is required by P004F002/P004F003 and must exist in the DOM before any P004 wiring
+- [x] P001F003T002 [P] Create `src/style.css` with full-screen flexbox layout: `body { display: flex; height: 100dvh; overflow: hidden; margin: 0 }`; `#viewport-container { flex: 2; position: relative; min-width: 0 }`; `canvas { width: 100%; height: 100%; display: block }`; `#scene-controls { flex: 0 0 var(--pane-width, calc(100vw / 3)); min-width: 200px; max-width: 50vw; overflow-y: auto }` — using `flex: 0 0 var(--pane-width, ...)` instead of `flex: 1` so P004's `DragHandle` can resize the pane by writing `--pane-width` via `style.setProperty`; `#scene-controls[data-collapsed="true"] { flex: 0 0 32px; min-width: 32px; overflow: hidden }` — required by P004F002 collapse toggle; `#drag-handle { width: 6px; cursor: col-resize; background: #333 }`; import `./style.css` in `src/main.ts`
 
 ### Exit Criteria: Phase 1
 
