@@ -21,8 +21,7 @@ export default {
     messages: {
       prose:
         'JSDoc prose description is not allowed. Document via @example doctest blocks instead.',
-      forbiddenTag:
-        'JSDoc tag "@{{tag}}" is not allowed. Only @example doctests are permitted.',
+      forbiddenTag: 'JSDoc tag "@{{tag}}" is not allowed. Only @example doctests are permitted.',
       notADoctest:
         '@example block must contain a ```ts @import.meta.vitest fence to be a runnable doctest.',
     },

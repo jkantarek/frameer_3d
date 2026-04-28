@@ -38,11 +38,11 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "prettier --write",
+      "prettier --check",
       "eslint --max-warnings 0"
     ],
     "*.{json,md,html,css}": [
-      "prettier --write"
+      "prettier --check"
     ]
   }
 }

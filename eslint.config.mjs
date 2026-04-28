@@ -10,13 +10,7 @@ const localPlugin = {
 export default tseslint.config(
   // Files to never lint
   {
-    ignores: [
-      'dist/**',
-      'coverage/**',
-      'eslint.config.mjs',
-      '*.config.js',
-      '*.config.cjs',
-    ],
+    ignores: ['dist/**', 'coverage/**', 'eslint.config.mjs', '*.config.js', '*.config.cjs'],
   },
 
   // Base JS rules
@@ -107,4 +101,3 @@ export default tseslint.config(
   // Disable formatting rules that conflict with Prettier
   prettier,
 );
-
