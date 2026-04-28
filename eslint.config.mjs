@@ -1,6 +1,11 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
+import jsdocExamplesOnly from './eslint-rules/jsdoc-examples-only.mjs';
+
+const localPlugin = {
+  rules: { 'jsdoc-examples-only': jsdocExamplesOnly },
+};
 
 export default tseslint.config(
   // Files to never lint
@@ -21,8 +26,25 @@ export default tseslint.config(
   ...tseslint.configs.strictTypeChecked.map((c) => ({ ...c, files: ['src/**/*.{ts,tsx}'] })),
   ...tseslint.configs.stylisticTypeChecked.map((c) => ({ ...c, files: ['src/**/*.{ts,tsx}'] })),
 
+  // Tooling config files — parse with node tsconfig, light rules only
+  {
+    files: ['*.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: './tsconfig.node.json',
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      'no-var': 'error',
+      'prefer-const': 'error',
+      eqeqeq: ['error', 'always'],
+    },
+  },
+
   {
     files: ['src/**/*.{ts,tsx}'],
+    plugins: { local: localPlugin },
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -73,6 +95,12 @@ export default tseslint.config(
       eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
+
+      // File length: max 150 non-comment lines
+      'max-lines': ['error', { max: 150, skipComments: true, skipBlankLines: false }],
+
+      // All JSDoc must be executable @example doctests — no prose, no @param/@returns
+      'local/jsdoc-examples-only': 'error',
     },
   },
 
