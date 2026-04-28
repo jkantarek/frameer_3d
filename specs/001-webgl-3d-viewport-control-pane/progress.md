@@ -53,3 +53,24 @@ Started: 2026-04-28 08:06:34
 - `@typescript-eslint/no-confusing-void-expression` requires braces in `expect(() => { saveLayoutState(...); }).not.toThrow()` — no shorthand arrow returning void
 - Rubber duck caught missing branch coverage for valid-JSON-non-object cases (null, number) and missing/non-number paneWidth — added tests for both
 ---
+
+## Iteration 3 - 2026-04-28T09:08:00Z
+**User Story**: Phase 3 (P003) — US1: WebGL Viewport + Scene
+**Tasks Completed**: 
+- [x] P003F001T001–P003F008T001: All Phase 3 tasks (SceneManager, Viewport, ControlPane, main.ts bootstrap)
+**Tasks Remaining in Story**: None - Phase 3 complete
+**Commit**: 5c74161
+**Files Changed**: 
+- src/scene/SceneManager.ts, src/scene/SceneManager.test.ts (created)
+- src/scene/SceneRenderer.ts (setSize signature updated)
+- src/viewport/Viewport.ts, Viewport.test.ts, ViewportResize.test.ts (created)
+- src/controls/ControlPane.ts, ControlPane.test.ts (created)
+- src/main.ts (updated), src/main.test.ts (deleted), package.json (@tweakpane/core added)
+**Learnings**:
+- `import * as EssentialsPlugin from '@tweakpane/plugin-essentials'` — no named `EssentialsPlugin` export; use namespace import to satisfy `TpPluginBundle`
+- `@tweakpane/core` must be installed explicitly to resolve tweakpane type re-exports
+- `/* v8 ignore start/stop */` correctly excludes the `THREE.WebGLRenderer` IIFE from v8 coverage
+- `@typescript-eslint/no-this-alias` fires on `fakeVar = this`; use static class property instead
+- TypeScript allows implementing interface methods with fewer parameters (structural subtyping) — avoids unused-param lint errors in mocks
+- `Array<T>` is forbidden; use `T[]` instead
+---
