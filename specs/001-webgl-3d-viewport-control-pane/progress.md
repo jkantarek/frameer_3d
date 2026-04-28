@@ -74,3 +74,23 @@ Started: 2026-04-28 08:06:34
 - TypeScript allows implementing interface methods with fewer parameters (structural subtyping) — avoids unused-param lint errors in mocks
 - `Array<T>` is forbidden; use `T[]` instead
 ---
+## Iteration 4 - 2026-04-28T09:31:00Z
+**User Story**: Phase 4 (P004) — US2: Layout Persistence + Collapse/Resize
+**Tasks Completed**: 
+- [x] P004F001T001–P004F004T001: All Phase 4 tasks (DragHandle drag+toggle+ARIA+main.ts wiring)
+**Tasks Remaining in Story**: None - Phase 4 complete
+**Commit**: ce6d098
+**Files Changed**: 
+- src/layout/DragHandle.ts (created): createDragHandle + createToggleButton
+- src/layout/DragHandle.drag.test.ts (created): F001 core drag tests (6 tests)
+- src/layout/DragHandle.drag2.test.ts (created): F001 edge cases + F003 ARIA drag (5 tests)
+- src/layout/DragHandle.toggle.test.ts (created): F002 toggle + F003 ARIA toggle (9 tests)
+- src/main.ts (updated): loadLayoutState wiring, --pane-width init, drag/toggle wiring
+- specs/.../tasks.md: P004 tasks marked complete
+**Learnings**:
+- jsdom 26 has no `PointerEvent` or `setPointerCapture`; stub with `vi.stubGlobal('PointerEvent', FakePointerEvent)` where `FakePointerEvent extends MouseEvent` with `readonly pointerId: number`
+- `handleEl.setPointerCapture = (): void => { return; }` on the instance (not prototype) avoids `no-empty-function` lint error
+- `@typescript-eslint/restrict-template-expressions` forbids numbers in template literals; use `String(n) + 'px'` instead of `` `${n}px` ``
+- Prettier expands multi-arg constructor calls past 80 chars; use a `fire(el, type, init)` helper to keep dispatch calls compact and test files under the 150-line limit
+- `max-lines: { skipComments: true, skipBlankLines: false }` — blank lines count; split test files along describe-block boundaries when approaching the limit
+---
