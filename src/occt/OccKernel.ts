@@ -1,5 +1,5 @@
-import { initOpenCascade } from 'opencascade.js';
-import type { OpenCascadeInstance } from 'opencascade.js';
+import { initOpenCascade } from './opencascade-wrapper.js';
+import type { OpenCascadeInstance } from './opencascade-wrapper.js';
 
 export interface GeometryKernel {
   readonly instance: OpenCascadeInstance;

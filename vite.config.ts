@@ -5,7 +5,7 @@ export default defineConfig({
     target: 'es2022',
   },
   optimizeDeps: {
-    exclude: ['opencascade.js'],
+    exclude: ['opencascade.js', 'opencascade.js/dist/opencascade.wasm.js'],
   },
   server: {
     headers: {

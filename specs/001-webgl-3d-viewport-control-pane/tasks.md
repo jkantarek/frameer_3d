@@ -203,12 +203,12 @@ All criteria MUST pass before this story is committed:
 
 ### P005F001 — `OccKernel` module
 
-- [ ] P005F001T001 Write black-box unit tests for `loadOcct` and `isOcctLoaded` in `src/occt/OccKernel.test.ts` — tests: `isOcctLoaded()` returns `false` before any call; calling `loadOcct()` twice in the same test resolves to the same object reference (idempotency); `isOcctLoaded()` returns `true` after `await loadOcct()` resolves; use `vi.mock('opencascade.js', () => ({ default: vi.fn().mockResolvedValue({ version: 'mock' }) }))` to avoid loading the real WASM
-- [ ] P005F001T002 Implement `GeometryKernel` interface (`readonly instance: OpenCascadeInstance`), `loadOcct(): Promise<GeometryKernel>`, and `isOcctLoaded(): boolean` in `src/occt/OccKernel.ts` — module-level `let occt: OpenCascadeInstance | null = null`; `loadOcct` calls `initOpenCascade()` from `opencascade.js` on first call and wraps the result in `GeometryKernel`; subsequent calls return the cached kernel immediately; `isOcctLoaded` returns `occt !== null`
+- [x] P005F001T001 Write black-box unit tests for `loadOcct` and `isOcctLoaded` in `src/occt/OccKernel.test.ts` — tests: `isOcctLoaded()` returns `false` before any call; calling `loadOcct()` twice in the same test resolves to the same object reference (idempotency); `isOcctLoaded()` returns `true` after `await loadOcct()` resolves; use `vi.mock('opencascade.js', () => ({ default: vi.fn().mockResolvedValue({ version: 'mock' }) }))` to avoid loading the real WASM
+- [x] P005F001T002 Implement `GeometryKernel` interface (`readonly instance: OpenCascadeInstance`), `loadOcct(): Promise<GeometryKernel>`, and `isOcctLoaded(): boolean` in `src/occt/OccKernel.ts` — module-level `let occt: OpenCascadeInstance | null = null`; `loadOcct` calls `initOpenCascade()` from `opencascade.js` on first call and wraps the result in `GeometryKernel`; subsequent calls return the cached kernel immediately; `isOcctLoaded` returns `occt !== null`
 
 ### P005F002 — `main.ts` US3 wiring
 
-- [ ] P005F002T001 Update `src/main.ts` to call `loadOcct()` after the RAF loop is started (fire-and-forget, non-blocking); attach `.catch(err => console.warn('OCCT load failed:', err))` to handle WASM load failure gracefully (no test required — `src/main.ts` is excluded from coverage)
+- [x] P005F002T001 Update `src/main.ts` to call `loadOcct()` after the RAF loop is started (fire-and-forget, non-blocking); attach `.catch(err => console.warn('OCCT load failed:', err))` to handle WASM load failure gracefully (no test required — `src/main.ts` is excluded from coverage)
 
 ### Exit Criteria: Phase 5 (US3)
 
@@ -230,13 +230,13 @@ All criteria MUST pass before this story is committed:
 
 ### P006F001 — Code Quality + Size Audit
 
-- [ ] P006F001T001 [P] Audit all new source files for 150 non-comment line limit (`pnpm lint --max-warnings 0`); if any file approaches 130+ lines, refactor along domain boundaries defined in `specs/001-webgl-3d-viewport-control-pane/data-model.md` (e.g. split Viewport into `Viewport.ts` + `ViewportResize.ts` if needed)
-- [ ] P006F001T002 [P] Run full quality gate suite (`pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:coverage`) and confirm all thresholds pass; fix any remaining lint, type, format, or coverage issues before proceeding
+- [x] P006F001T001 [P] Audit all new source files for 150 non-comment line limit (`pnpm lint --max-warnings 0`); if any file approaches 130+ lines, refactor along domain boundaries defined in `specs/001-webgl-3d-viewport-control-pane/data-model.md` (e.g. split Viewport into `Viewport.ts` + `ViewportResize.ts` if needed)
+- [x] P006F001T002 [P] Run full quality gate suite (`pnpm typecheck && pnpm lint && pnpm format:check && pnpm test:coverage`) and confirm all thresholds pass; fix any remaining lint, type, format, or coverage issues before proceeding
 
 ### P006F002 — Build + Quickstart E2E Validation
 
-- [ ] P006F002T001 Run `pnpm build` and confirm zero TypeScript + Vite bundle errors; verify `dist/` contains the WASM binary artifact from `opencascade.js` (check for `.wasm` file)
-- [ ] P006F002T002 Follow `specs/001-webgl-3d-viewport-control-pane/quickstart.md` end-to-end: `pnpm install && pnpm dev`; verify in Chrome: dark 3D viewport with XYZ AxesHelper, Tweakpane pane visible, drag-resize works, toggle collapse works, reload restores state, no console errors, canvas `role="img"` present in DevTools
+- [x] P006F002T001 Run `pnpm build` and confirm zero TypeScript + Vite bundle errors; verify `dist/` contains the WASM binary artifact from `opencascade.js` (check for `.wasm` file)
+- [x] P006F002T002 Follow `specs/001-webgl-3d-viewport-control-pane/quickstart.md` end-to-end: `pnpm install && pnpm dev`; verify in Chrome: dark 3D viewport with XYZ AxesHelper, Tweakpane pane visible, drag-resize works, toggle collapse works, reload restores state, no console errors, canvas `role="img"` present in DevTools
 
 ### Exit Criteria: Phase 6 (Polish)
 

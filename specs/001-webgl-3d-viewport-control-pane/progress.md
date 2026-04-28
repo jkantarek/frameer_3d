@@ -94,3 +94,25 @@ Started: 2026-04-28 08:06:34
 - Prettier expands multi-arg constructor calls past 80 chars; use a `fire(el, type, init)` helper to keep dispatch calls compact and test files under the 150-line limit
 - `max-lines: { skipComments: true, skipBlankLines: false }` — blank lines count; split test files along describe-block boundaries when approaching the limit
 ---
+---
+## Iteration 5 - 2026-04-28T09:37:01Z
+**User Story**: Phase 5 (P005) — US3: OpenCASCADE.js WASM Loading
+**Tasks Completed**: 
+- [x] P005F001T001: Write tests for loadOcct + isOcctLoaded (4 tests)
+- [x] P005F001T002: Implement OccKernel with GeometryKernel interface + promise-caching for concurrent safety
+- [x] P005F002T001: Wire loadOcct() fire-and-forget in main.ts
+**Tasks Remaining in Story**: None - story complete
+**Commit**: f989ce0
+**Files Changed**: 
+- src/occt/opencascade.d.ts (created): module declaration for opencascade.js (no bundled types)
+- src/occt/OccKernel.ts (created): GeometryKernel interface + loadOcct + isOcctLoaded
+- src/occt/OccKernel.test.ts (created): 4 tests via vi.resetModules() + dynamic imports
+- src/main.ts (updated): added loadOcct() fire-and-forget
+**Learnings**:
+- opencascade.js has no TypeScript declarations; create src/occt/opencascade.d.ts with `declare module 'opencascade.js'`
+- opencascade.js exports `initOpenCascade` as a NAMED export (not default); task spec's `default` mock was incorrect
+- Use `vi.resetModules()` in `beforeEach` + dynamic imports in each `it` to test module-level singletons without `beforeEach` state hiding
+- Cache the in-flight Promise (not just the resolved value) to prevent race condition when `loadOcct()` is called concurrently before first resolves
+- `void loadOcct().catch(err => ...)` is the correct no-floating-promises pattern for fire-and-forget in main.ts
+- `OpenCascadeInstance = unknown` (not `object`) is the correct opaque type for intentionally inaccessible WASM instance
+---
