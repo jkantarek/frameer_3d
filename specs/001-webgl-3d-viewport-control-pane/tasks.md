@@ -60,12 +60,12 @@ Convention within every `F###` group:
 
 ### P002F001 — `SceneRenderer` Interface (GL boundary)
 
-- [ ] P002F001T001 Create `src/scene/SceneRenderer.ts` exporting `SceneRenderer` interface (`render(scene: Scene, camera: PerspectiveCamera): void`, `setSize(width: number, height: number): void`) imported from `three`; add compile-time structural compatibility doctest confirming that an object literal satisfying the interface compiles without error in `src/scene/SceneRenderer.ts`
+- [x] P002F001T001 Create `src/scene/SceneRenderer.ts` exporting `SceneRenderer` interface (`render(scene: Scene, camera: PerspectiveCamera): void`, `setSize(width: number, height: number): void`) imported from `three`; add compile-time structural compatibility doctest confirming that an object literal satisfying the interface compiles without error in `src/scene/SceneRenderer.ts`
 
 ### P002F002 — `LayoutState` Interface + Functions
 
-- [ ] P002F002T001 [P] Write black-box unit tests for `loadLayoutState`, `saveLayoutState`, and `defaultLayoutState` in `src/layout/LayoutState.test.ts` — tests: defaults returned when localStorage is empty; valid stored values round-trip correctly; invalid JSON input causes fallback to defaults; `paneWidth` out of range `[200, window.innerWidth * 0.5]` is clamped to nearest bound; non-boolean `paneCollapsed` falls back to `false`; `saveLayoutState` writes valid JSON to `localStorage`; `saveLayoutState` calls `console.warn` and does not throw when localStorage quota throws (use `vi.spyOn`)
-- [ ] P002F002T002 [P] Implement `LayoutState` interface, `defaultLayoutState(): LayoutState`, `loadLayoutState(): LayoutState`, and `saveLayoutState(state: LayoutState): void` in `src/layout/LayoutState.ts` — localStorage key `frameer3d.v1.layout`; all reads/writes wrapped in `try/catch`; validation uses `clamp` from `src/utils/math.ts`; failures call `console.warn` and return defaults
+- [x] P002F002T001 [P] Write black-box unit tests for `loadLayoutState`, `saveLayoutState`, and `defaultLayoutState` in `src/layout/LayoutState.test.ts` — tests: defaults returned when localStorage is empty; valid stored values round-trip correctly; invalid JSON input causes fallback to defaults; `paneWidth` out of range `[200, window.innerWidth * 0.5]` is clamped to nearest bound; non-boolean `paneCollapsed` falls back to `false`; `saveLayoutState` writes valid JSON to `localStorage`; `saveLayoutState` calls `console.warn` and does not throw when localStorage quota throws (use `vi.spyOn`)
+- [x] P002F002T002 [P] Implement `LayoutState` interface, `defaultLayoutState(): LayoutState`, `loadLayoutState(): LayoutState`, and `saveLayoutState(state: LayoutState): void` in `src/layout/LayoutState.ts` — localStorage key `frameer3d.v1.layout`; all reads/writes wrapped in `try/catch`; validation uses `clamp` from `src/utils/math.ts`; failures call `console.warn` and return defaults
 
 ### Exit Criteria: Phase 2
 
