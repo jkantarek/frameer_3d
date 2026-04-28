@@ -1,0 +1,71 @@
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+
+export default tseslint.config(
+  { ignores: ['dist', 'coverage', '*.config.{js,cjs}'] },
+
+  // Base JS rules
+  js.configs.recommended,
+
+  // TypeScript strict + stylistic
+  ...tseslint.configs.strictTypeChecked,
+  ...tseslint.configs.stylisticTypeChecked,
+
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      // Enforce explicit return types everywhere
+      '@typescript-eslint/explicit-function-return-type': 'error',
+      '@typescript-eslint/explicit-module-boundary-types': 'error',
+
+      // No any, ever
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+
+      // Enforce consistent patterns
+      '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports' }],
+      '@typescript-eslint/consistent-type-exports': 'error',
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+
+      // Naming conventions
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'interface', format: ['PascalCase'] },
+        { selector: 'typeAlias', format: ['PascalCase'] },
+        { selector: 'enum', format: ['PascalCase'] },
+        { selector: 'enumMember', format: ['UPPER_CASE'] },
+        {
+          selector: 'variable',
+          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+          leadingUnderscore: 'allow',
+        },
+        { selector: 'function', format: ['camelCase', 'PascalCase'] },
+        { selector: 'class', format: ['PascalCase'] },
+      ],
+
+      // Misc strictness
+      '@typescript-eslint/no-non-null-assertion': 'error',
+      '@typescript-eslint/prefer-readonly': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'eqeqeq': ['error', 'always'],
+      'no-var': 'error',
+      'prefer-const': 'error',
+    },
+  },
+
+  // Disable formatting rules that conflict with Prettier
+  prettier,
+);
