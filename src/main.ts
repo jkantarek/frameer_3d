@@ -4,6 +4,7 @@ import { createViewport } from './viewport/Viewport.js';
 import { createControlPane } from './controls/ControlPane.js';
 import { loadLayoutState } from './layout/LayoutState.js';
 import { createDragHandle, createToggleButton } from './layout/DragHandle.js';
+import { loadOcct } from './occt/OccKernel.js';
 
 export function main(): void {
   const canvas = document.getElementById('viewport');
@@ -36,6 +37,10 @@ export function main(): void {
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
 
   createControlPane(controlsContainer);
+
+  void loadOcct().catch((err: unknown) => {
+    console.warn('OCCT load failed:', err);
+  });
 }
 
 main();
