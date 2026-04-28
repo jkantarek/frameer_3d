@@ -3,16 +3,26 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', '*.config.{js,cjs}'] },
+  // Files to never lint
+  {
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'eslint.config.mjs',
+      '*.config.js',
+      '*.config.cjs',
+    ],
+  },
 
   // Base JS rules
   js.configs.recommended,
 
-  // TypeScript strict + stylistic
-  ...tseslint.configs.strictTypeChecked,
-  ...tseslint.configs.stylisticTypeChecked,
+  // TypeScript strict + stylistic (scoped to src only)
+  ...tseslint.configs.strictTypeChecked.map((c) => ({ ...c, files: ['src/**/*.{ts,tsx}'] })),
+  ...tseslint.configs.stylisticTypeChecked.map((c) => ({ ...c, files: ['src/**/*.{ts,tsx}'] })),
 
   {
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       parserOptions: {
         projectService: true,
@@ -60,7 +70,7 @@ export default tseslint.config(
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'eqeqeq': ['error', 'always'],
+      eqeqeq: ['error', 'always'],
       'no-var': 'error',
       'prefer-const': 'error',
     },
@@ -69,3 +79,4 @@ export default tseslint.config(
   // Disable formatting rules that conflict with Prettier
   prettier,
 );
+
