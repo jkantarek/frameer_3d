@@ -3,3 +3,6 @@ coverage/
 node_modules/
 *.local
 .pnpm-debug.log*
+.github/
+.specify/
+AGENTS.md
