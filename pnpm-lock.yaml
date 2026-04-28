@@ -7,6 +7,9 @@ settings:
 importers:
   .:
     dependencies:
+      '@tweakpane/core':
+        specifier: ^2.0.5
+        version: 2.0.5
       '@tweakpane/plugin-essentials':
         specifier: ^0.2.1
         version: 0.2.1(tweakpane@4.0.5)
@@ -721,6 +724,12 @@ packages:
     resolution:
       {
         integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==,
+      }
+
+  '@tweakpane/core@2.0.5':
+    resolution:
+      {
+        integrity: sha512-punBgD5rKCF5vcNo6BsSOXiDR/NSs9VM7SG65QSLJIxfRaGgj54ree9zQW6bO3pNFf3AogiGgaNODUVQRk9YqQ==,
       }
 
   '@tweakpane/plugin-essentials@0.2.1':
@@ -2711,6 +2720,8 @@ snapshots:
     optional: true
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@tweakpane/core@2.0.5': {}
 
   '@tweakpane/plugin-essentials@0.2.1(tweakpane@4.0.5)':
     dependencies:

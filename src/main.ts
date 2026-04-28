@@ -1,12 +1,24 @@
+import * as THREE from 'three';
 import './style.css';
+import { createViewport } from './viewport/Viewport.js';
+import { createControlPane } from './controls/ControlPane.js';
 
 export function main(): void {
   const canvas = document.getElementById('viewport');
   if (!(canvas instanceof HTMLCanvasElement)) {
     throw new Error('No canvas element with id="viewport" found');
   }
-  // TODO: initialise WebGL/WASM renderer
-  console.warn('Frameer 3D renderer not yet initialised', canvas);
+  const controlsContainer = document.getElementById('scene-controls');
+  if (!(controlsContainer instanceof HTMLElement)) {
+    throw new Error('No element with id="scene-controls" found');
+  }
+
+  const viewport = createViewport(canvas);
+  const sceneManager = viewport.getSceneManager();
+  sceneManager.setBackground('#1a1a2e');
+  sceneManager.addObject('axes', new THREE.AxesHelper(2));
+
+  createControlPane(controlsContainer);
 }
 
 main();

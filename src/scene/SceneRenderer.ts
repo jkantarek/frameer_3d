@@ -13,5 +13,5 @@ import type { PerspectiveCamera, Scene } from 'three';
  */
 export interface SceneRenderer {
   render(scene: Scene, camera: PerspectiveCamera): void;
-  setSize(width: number, height: number): void;
+  setSize(width: number, height: number, updateStyle?: boolean): void;
 }

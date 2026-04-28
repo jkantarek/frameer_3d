@@ -33,3 +33,23 @@ Started: 2026-04-28 08:06:34
 - `opencascade.js` must be excluded from `optimizeDeps` to prevent Vite pre-bundling the WASM artifact
 ---
 
+---
+## Iteration 2 - 2026-04-28T13:15:00Z
+**User Story**: Phase 2 (P002) — Foundational Prerequisites
+**Tasks Completed**: 
+- [x] P002F001T001: Create src/scene/SceneRenderer.ts with SceneRenderer interface + structural doctest
+- [x] P002F002T001: Write black-box unit tests for LayoutState (11 tests covering all branches)
+- [x] P002F002T002: Implement LayoutState interface + loadLayoutState / saveLayoutState / defaultLayoutState
+**Tasks Remaining in Story**: None - story complete
+**Commit**: 1dd5747
+**Files Changed**: 
+- src/scene/SceneRenderer.ts
+- src/layout/LayoutState.ts
+- src/layout/LayoutState.test.ts
+- specs/001-webgl-3d-viewport-control-pane/tasks.md
+**Learnings**:
+- TypeScript interface files (no runtime code) show as 0% in v8 coverage but don't reduce the aggregate — overall coverage stays 100%
+- ESLint blocks `() => {}` empty arrow functions and `!` non-null assertions in tests — use `vi.spyOn(console, 'warn')` without mockImplementation; use `raw ?? ''` instead of `raw!`
+- `@typescript-eslint/no-confusing-void-expression` requires braces in `expect(() => { saveLayoutState(...); }).not.toThrow()` — no shorthand arrow returning void
+- Rubber duck caught missing branch coverage for valid-JSON-non-object cases (null, number) and missing/non-number paneWidth — added tests for both
+---
