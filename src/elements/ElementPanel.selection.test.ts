@@ -53,21 +53,6 @@ describe('createElementPanel — selection', () => {
     localStorage.clear();
   });
 
-  it('clicking a row with no data-id or unknown id is a no-op', () => {
-    const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
-    const folder = makeFolder();
-    const panel = createElementPanel(document.createElement('div'), makeSm(), folder);
-    const li = panel.getElement().querySelector<HTMLLIElement>('li');
-    li?.removeAttribute('data-id');
-    li?.click();
-    expect(folder.children.length).toBe(0);
-    li?.setAttribute('data-id', 'nonexistent-id');
-    li?.click();
-    expect(folder.children.length).toBe(0);
-    localStorage.clear();
-  });
-
   it('onChange from binding updates geometry in scene', () => {
     const boxEl = createBox();
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));

@@ -1,7 +1,7 @@
 import type { FolderApi } from 'tweakpane';
 import type { SceneManager } from '../scene/SceneManager.js';
 import type { ElementStoreData, SceneElement } from './ElementTypes.js';
-import { load, save, addElement, findElement, updateElement } from './ElementStore.js';
+import { load, save, addElement, updateElement } from './ElementStore.js';
 import { createElementRenderer } from './ElementRenderer.js';
 import { createElementControls } from './ElementControls.js';
 import { createBox, createSphere, createCylinder } from './PrimitiveFactory.js';
@@ -16,7 +16,7 @@ function appendElements(
   depth: number,
   listEl: HTMLUListElement,
   selectedId: string | undefined,
-  onSelect: (id: string) => void,
+  onSelect: (element: SceneElement) => void,
 ): void {
   for (const el of elements) {
     const li = document.createElement('li');
@@ -25,7 +25,7 @@ function appendElements(
     li.textContent = el.label;
     li.setAttribute('aria-selected', String(el.id === selectedId));
     li.addEventListener('click', () => {
-      onSelect(li.getAttribute('data-id') ?? '');
+      onSelect(el);
     });
     listEl.appendChild(li);
     appendElements(el.child_elements, depth + 1, listEl, selectedId, onSelect);
@@ -36,7 +36,7 @@ function renderList(
   state: ElementStoreData,
   listEl: HTMLUListElement,
   selectedId: string | undefined,
-  onSelect: (id: string) => void,
+  onSelect: (element: SceneElement) => void,
 ): void {
   listEl.innerHTML = '';
   appendElements(state.elements, 0, listEl, selectedId, onSelect);
@@ -61,17 +61,14 @@ export function createElementPanel(
   listEl.id = 'elements-list';
   panel.appendChild(listEl);
 
-  function onSelect(id: string): void {
-    selectedId = id;
+  function onSelect(element: SceneElement): void {
+    selectedId = element.id;
     listEl.querySelectorAll<HTMLLIElement>('li').forEach((li) => {
-      li.setAttribute('aria-selected', String(li.dataset.id === id));
+      li.setAttribute('aria-selected', String(li.dataset.id === element.id));
     });
-    const found = findElement(state, id);
-    if (found) {
-      controls.bind(found, (updated) => {
-        commit(updateElement(state, updated));
-      });
-    }
+    controls.bind(element, (updated) => {
+      commit(updateElement(state, updated));
+    });
   }
 
   renderList(state, listEl, selectedId, onSelect);
