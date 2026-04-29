@@ -133,18 +133,13 @@ describe('updateElement', () => {
 });
 
 describe('findElement', () => {
-  it('finds top-level element by id', () => {
-    const el = makeEl('a');
-    expect(findElement({ elements: [el] }, 'a')).toBe(el);
-  });
-
-  it('finds element nested in child_elements', () => {
+  it('locates elements at any depth; returns undefined when absent', () => {
     const child = makeEl('c');
     const parent = makeEl('p', [child]);
+    const other = makeEl('o');
+    const cousin = makeEl('a', [makeEl('x')]);
     expect(findElement({ elements: [parent] }, 'c')).toBe(child);
-  });
-
-  it('returns undefined when not found', () => {
-    expect(findElement({ elements: [] }, 'x')).toBeUndefined();
+    expect(findElement({ elements: [cousin, other] }, 'o')).toBe(other);
+    expect(findElement({ elements: [] }, 'z')).toBeUndefined();
   });
 });
