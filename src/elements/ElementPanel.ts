@@ -1,8 +1,9 @@
 import type { FolderApi } from 'tweakpane';
 import type { SceneManager } from '../scene/SceneManager.js';
 import type { ElementStoreData, SceneElement } from './ElementTypes.js';
-import { load, save, addElement } from './ElementStore.js';
+import { load, save, addElement, findElement, updateElement } from './ElementStore.js';
 import { createElementRenderer } from './ElementRenderer.js';
+import { createElementControls } from './ElementControls.js';
 import { createBox, createSphere, createCylinder } from './PrimitiveFactory.js';
 
 export interface ElementPanelApi {
@@ -14,39 +15,73 @@ function appendElements(
   elements: readonly SceneElement[],
   depth: number,
   listEl: HTMLUListElement,
+  selectedId: string | undefined,
+  onSelect: (id: string) => void,
 ): void {
   for (const el of elements) {
     const li = document.createElement('li');
     li.dataset.id = el.id;
     li.dataset.depth = String(depth);
     li.textContent = el.label;
+    li.setAttribute('aria-selected', String(el.id === selectedId));
+    li.addEventListener('click', () => {
+      onSelect(li.getAttribute('data-id') ?? '');
+    });
     listEl.appendChild(li);
-    appendElements(el.child_elements, depth + 1, listEl);
+    appendElements(el.child_elements, depth + 1, listEl, selectedId, onSelect);
   }
 }
 
-function renderList(state: ElementStoreData, listEl: HTMLUListElement): void {
+function renderList(
+  state: ElementStoreData,
+  listEl: HTMLUListElement,
+  selectedId: string | undefined,
+  onSelect: (id: string) => void,
+): void {
   listEl.innerHTML = '';
-  appendElements(state.elements, 0, listEl);
+  appendElements(state.elements, 0, listEl, selectedId, onSelect);
 }
 
 export function createElementPanel(
   container: HTMLElement,
   sceneManager: SceneManager,
-  _controlFolder: FolderApi,
+  controlFolder: FolderApi,
 ): ElementPanelApi {
   const panel = document.createElement('div');
   panel.id = 'elements-panel';
   container.appendChild(panel);
 
   const renderer = createElementRenderer(sceneManager);
+  const controls = createElementControls(controlFolder);
   let state = load();
+  let selectedId: string | undefined;
   renderer.sync(state);
 
   const listEl = document.createElement('ul');
   listEl.id = 'elements-list';
   panel.appendChild(listEl);
-  renderList(state, listEl);
+
+  function onSelect(id: string): void {
+    selectedId = id;
+    listEl.querySelectorAll<HTMLLIElement>('li').forEach((li) => {
+      li.setAttribute('aria-selected', String(li.dataset.id === id));
+    });
+    const found = findElement(state, id);
+    if (found) {
+      controls.bind(found, (updated) => {
+        commit(updateElement(state, updated));
+      });
+    }
+  }
+
+  renderList(state, listEl, selectedId, onSelect);
+
+  function commit(newState: ElementStoreData): void {
+    state = newState;
+    save(state);
+    renderer.sync(state);
+    renderList(state, listEl, selectedId, onSelect);
+  }
 
   const addBtn = document.createElement('button');
   addBtn.id = 'elements-add-btn';
@@ -57,13 +92,6 @@ export function createElementPanel(
   picker.id = 'elements-picker';
   picker.hidden = true;
   panel.appendChild(picker);
-
-  function commit(newState: ElementStoreData): void {
-    state = newState;
-    save(state);
-    renderer.sync(state);
-    renderList(state, listEl);
-  }
 
   const types: readonly [string, () => SceneElement][] = [
     ['Box', createBox],
@@ -90,6 +118,7 @@ export function createElementPanel(
       return panel;
     },
     dispose(): void {
+      controls.clear();
       container.removeChild(panel);
     },
   };
