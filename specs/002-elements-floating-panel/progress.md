@@ -31,3 +31,39 @@ Started: 2026-04-29 08:49:01
 
 ---
 
+---
+## Iteration 2 - 2026-04-29T08:49:23
+**User Story**: Phase 2 (P002) — ElementTypes Foundation
+**Tasks Completed**: 
+- [x] P002F001T001: Create src/elements/ElementTypes.ts with all 6 readonly type/interface declarations
+**Tasks Remaining in Story**: None — Phase 2 complete
+**Commit**: 389ef7c
+**Files Changed**: 
+- src/elements/ElementTypes.ts (created)
+- specs/002-elements-floating-panel/tasks.md (task status updated)
+**Learnings**:
+- Phase 2 exit criteria do NOT require tests/coverage — types-only file; typecheck + lint + format suffices
+- All properties declared readonly per contracts/elements-api.md; recursive SceneElement interface compiles cleanly under all strict TS flags
+---
+
+---
+## Iteration 3 - 2026-04-29
+**User Story**: Phase 3 (P003) — ElementStore and PrimitiveFactory data layer
+**Tasks Completed**:
+- [x] P003F001T001: `src/elements/ElementStore.test.ts` — full load/save/mutation test suite
+- [x] P003F001T002: `src/elements/ElementStore.ts` — `load()`, `save()` with localStorage + warn on error
+- [x] P003F002T001: Tests for `addElement`, `removeElement`, `updateElement`, `findElement`
+- [x] P003F002T002: Implemented all 4 mutation functions (immutable-update + recursive child traversal)
+- [x] P003F003T001: Doctests for `createBox`, `createSphere`, `createCylinder` (RED stubs)
+- [x] P003F003T002: Implemented all 3 factory functions using `ulid()` per data-model.md defaults
+**Tasks Remaining in Story**: None — Phase 3 complete
+**Files Changed**:
+- src/elements/ElementStore.ts (created)
+- src/elements/ElementStore.test.ts (created)
+- src/elements/PrimitiveFactory.ts (stubs → full implementation)
+- src/elements/index.ts (empty → re-exports all 3 modules)
+- specs/002-elements-floating-panel/tasks.md (all P003 tasks marked [x])
+**Learnings**:
+- `@typescript-eslint/no-unnecessary-condition` fires on `let changed = false` mutated in `.map`/`.filter` callbacks; use `findElement` guard + pure helper instead
+- `max-lines: 150` counts blank lines; consolidate intra-describe blank lines if needed to stay under limit
+---
