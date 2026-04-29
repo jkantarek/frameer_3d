@@ -4,6 +4,7 @@ import { createViewport } from './viewport/Viewport.js';
 import { createControlPane } from './controls/ControlPane.js';
 import { loadLayoutState } from './layout/LayoutState.js';
 import { loadOcct } from './occt/OccKernel.js';
+import { createElementPanel } from './elements/index.js';
 
 export function main(): void {
   const canvas = document.getElementById('viewport');
@@ -22,7 +23,15 @@ export function main(): void {
   sceneManager.setBackground('#1a1a2e');
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
 
-  createControlPane(controlsContainer, layoutState);
+  const controlPane = createControlPane(controlsContainer, layoutState);
+  const elementFolder = controlPane.addFolder('Element');
+
+  const viewportContainer = canvas.parentElement;
+  if (!(viewportContainer instanceof HTMLElement)) {
+    throw new Error('Canvas has no parent HTMLElement');
+  }
+
+  createElementPanel(viewportContainer, sceneManager, elementFolder);
 
   void loadOcct().catch((err: unknown) => {
     console.warn('OCCT load failed:', err);
