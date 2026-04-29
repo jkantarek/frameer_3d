@@ -3,7 +3,6 @@ import './style.css';
 import { createViewport } from './viewport/Viewport.js';
 import { createControlPane } from './controls/ControlPane.js';
 import { loadLayoutState } from './layout/LayoutState.js';
-import { createDragHandle, createToggleButton } from './layout/DragHandle.js';
 import { loadOcct } from './occt/OccKernel.js';
 
 export function main(): void {
@@ -17,26 +16,13 @@ export function main(): void {
   }
 
   const layoutState = loadLayoutState();
-  controlsContainer.style.setProperty('--pane-width', String(layoutState.paneWidth) + 'px');
-  if (layoutState.paneCollapsed) {
-    controlsContainer.dataset['collapsed'] = 'true';
-  }
-
-  const handleEl = document.getElementById('drag-handle');
-  const toggleEl = document.getElementById('toggle-pane');
-  if (handleEl instanceof HTMLElement) {
-    createDragHandle(handleEl, controlsContainer, layoutState);
-  }
-  if (toggleEl instanceof HTMLButtonElement) {
-    createToggleButton(toggleEl, controlsContainer, layoutState);
-  }
 
   const viewport = createViewport(canvas);
   const sceneManager = viewport.getSceneManager();
   sceneManager.setBackground('#1a1a2e');
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
 
-  createControlPane(controlsContainer);
+  createControlPane(controlsContainer, layoutState);
 
   void loadOcct().catch((err: unknown) => {
     console.warn('OCCT load failed:', err);

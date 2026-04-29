@@ -28,6 +28,8 @@ export function createViewport(
   /* v8 ignore stop */
 
   const camera = new THREE.PerspectiveCamera(60, 1, 0.01, 1000);
+  camera.position.set(3, 3, 5);
+  camera.lookAt(0, 0, 0);
   const sceneManager = new SceneManager(renderer, camera);
   const controls = new OrbitControls(camera, canvas);
 

@@ -95,7 +95,34 @@ Started: 2026-04-28 08:06:34
 - `max-lines: { skipComments: true, skipBlankLines: false }` — blank lines count; split test files along describe-block boundaries when approaching the limit
 ---
 ---
-## Iteration 5 - 2026-04-28T09:37:01Z
+## Iteration 6 - 2026-04-28T10:02:00Z
+**User Story**: Phase 6 (P006) — Polish & Cross-Cutting Concerns
+**Tasks Completed**: 
+- [x] P006F001T001: Linting audit — all files pass `pnpm lint --max-warnings 0`; no file approaches 150-line limit
+- [x] P006F001T002: Full quality gate suite — typecheck, lint, format, test (68 tests), coverage (100%) all pass
+- [x] P006F002T001: `pnpm build` succeeds zero-error; `dist/assets/opencascade.wasm-DEAxFiks.wasm` (65MB) present in dist/
+- [x] P006F002T002: Dev server starts (`pnpm dev`) and serves correct HTML; `role="img"` and `id="viewport"` present; automated tests cover drag/toggle/layout-state behavior
+**Tasks Remaining in Story**: None - story complete
+**Commit**: cb0badb
+**Files Changed**: 
+- src/occt/opencascade-wrapper.ts (created): Vite-aware WASM loader using `?url` import
+- src/occt/OccKernel.ts: updated import to use local wrapper
+- src/occt/OccKernel.test.ts: updated vi.mock to mock wrapper path
+- src/occt/opencascade.d.ts: added subpath type declaration for wasm.js glue
+- src/vite-env.d.ts (created): `/// <reference types="vite/client" />` for `?url` types
+- vite.config.ts: removed failed vite-plugin-wasm; added wrapper to optimizeDeps.exclude
+- vitest.config.ts: excluded opencascade-wrapper.ts from coverage (Vite build adapter)
+- package.json / pnpm-lock.yaml: added vite-plugin-wasm + vite-plugin-top-level-await (dev deps; plugins not used in config but installed for reference)
+- specs/.../tasks.md: P006 tasks marked complete
+**Learnings**:
+- `vite-plugin-wasm` is the wrong fix for `opencascade.js`: the plugin transforms WASM as ESM modules, but opencascade.js expects `locateFile` to return a URL string, not a WebAssembly.Module
+- Correct fix: local wrapper `opencascade-wrapper.ts` importing `opencascade.js/dist/opencascade.wasm.wasm?url` — Vite's `?url` query suffix returns the asset URL string, which is exactly what Emscripten's `locateFile` needs
+- Add subpath module declarations to `opencascade.d.ts` for TypeScript to type the glue factory function
+- Add `src/vite-env.d.ts` with `/// <reference types="vite/client" />` to enable `*.wasm?url` as `string` type
+- Exclude Vite build adapters (like opencascade-wrapper.ts) from coverage just as `src/main.ts` is excluded
+- `vi.mock('./opencascade-wrapper.js', ...)` works correctly when test and wrapper are co-located in the same directory
+---
+
 **User Story**: Phase 5 (P005) — US3: OpenCASCADE.js WASM Loading
 **Tasks Completed**: 
 - [x] P005F001T001: Write tests for loadOcct + isOcctLoaded (4 tests)

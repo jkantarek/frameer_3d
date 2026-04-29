@@ -1,14 +1,12 @@
 body {
-  display: flex;
   height: 100dvh;
   overflow: hidden;
   margin: 0;
 }
 
 #viewport-container {
-  flex: 2;
-  position: relative;
-  min-width: 0;
+  width: 100vw;
+  height: 100dvh;
 }
 
 canvas {
@@ -18,20 +16,13 @@ canvas {
 }
 
 #scene-controls {
-  flex: 0 0 var(--pane-width, calc(100vw / 3));
-  min-width: 200px;
-  max-width: 50vw;
-  overflow-y: auto;
-}
-
-#scene-controls[data-collapsed='true'] {
-  flex: 0 0 32px;
-  min-width: 32px;
-  overflow: hidden;
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 280px;
 }
 
 #drag-handle {
-  width: 6px;
-  cursor: col-resize;
-  background: #333;
+  display: none;
 }

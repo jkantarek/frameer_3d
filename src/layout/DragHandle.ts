@@ -57,27 +57,3 @@ export function createDragHandle(
     },
   };
 }
-
-export function createToggleButton(
-  toggleEl: HTMLButtonElement,
-  paneEl: HTMLElement,
-  state: LayoutState,
-): { dispose(): void } {
-  toggleEl.setAttribute('aria-expanded', String(state.paneCollapsed));
-  toggleEl.setAttribute('aria-label', 'Toggle control pane');
-
-  function onClick(): void {
-    state.paneCollapsed = !state.paneCollapsed;
-    paneEl.dataset['collapsed'] = String(state.paneCollapsed);
-    toggleEl.setAttribute('aria-expanded', String(state.paneCollapsed));
-    saveLayoutState(state);
-  }
-
-  toggleEl.addEventListener('click', onClick);
-
-  return {
-    dispose(): void {
-      toggleEl.removeEventListener('click', onClick);
-    },
-  };
-}
