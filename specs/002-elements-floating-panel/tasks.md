@@ -27,15 +27,15 @@
 
 ### P001F001 — Install `ulid` dependency
 
-- [ ] P001F001T001 Run `pnpm add ulid` to add `ulid` to `dependencies` in `package.json` and confirm the entry appears (MIT, ~2.5 KB, zero deps, browser-safe via `crypto.getRandomValues`)
+- [x] P001F001T001 Run `pnpm add ulid` to add `ulid` to `dependencies` in `package.json` and confirm the entry appears (MIT, ~2.5 KB, zero deps, browser-safe via `crypto.getRandomValues`)
 
 ### P001F002 — CSS overlay rules for `#elements-panel`
 
-- [ ] P001F002T001 [P] Add `position: relative` to the existing `#viewport-container` rule in `src/style.css` (required so the absolute-positioned panel overlay is scoped to the viewport container, not the viewport) and append the following new rules: `#elements-panel { position: absolute; left: 0; top: 0; bottom: 0; width: 220px; z-index: 10; pointer-events: none; }` and `#elements-panel > * { pointer-events: auto; }` (interactive children receive pointer events; empty panel areas pass clicks through to the Three.js canvas)
+- [x] P001F002T001 [P] Add `position: relative` to the existing `#viewport-container` rule in `src/style.css`
 
 ### P001F003 — Domain scaffold
 
-- [ ] P001F003T001 [P] Create `src/elements/index.ts` as an empty placeholder (`export {};`) to establish the domain module entry point
+- [x] P001F003T001 [P] Create `src/elements/index.ts` as an empty placeholder (`export {};`) to establish the domain module entry point
 
 ### Exit Criteria: Phase 1
 
