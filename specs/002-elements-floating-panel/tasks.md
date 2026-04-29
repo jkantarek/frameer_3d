@@ -53,7 +53,7 @@
 
 ### P002F001 — `ElementTypes` declarations
 
-- [ ] P002F001T001 Create `src/elements/ElementTypes.ts` with all 6 `readonly` type/interface declarations matching `contracts/elements-api.md` exactly: `AttributeType` (union `'number' | 'string' | 'boolean' | 'color' | 'select'`), `ParametricAttribute` (`id`, `attribute_uri_key`, `attribute_value`, `attribute_type`), `FixedAttribute` (`id`, `attribute_uri_key`, `attribute_value`), `OriginAttribute` (`id`, `dimension_uri_key`, `dimension_uri_value: number`), `SceneElement` (recursive `readonly child_elements: readonly SceneElement[]`), `ElementStoreData` (`readonly elements: readonly SceneElement[]`) — all properties `readonly` per contract
+- [x] P002F001T001 Create `src/elements/ElementTypes.ts` with all 6 `readonly` type/interface declarations matching `contracts/elements-api.md` exactly: `AttributeType` (union `'number' | 'string' | 'boolean' | 'color' | 'select'`), `ParametricAttribute` (`id`, `attribute_uri_key`, `attribute_value`, `attribute_type`), `FixedAttribute` (`id`, `attribute_uri_key`, `attribute_value`), `OriginAttribute` (`id`, `dimension_uri_key`, `dimension_uri_value: number`), `SceneElement` (recursive `readonly child_elements: readonly SceneElement[]`), `ElementStoreData` (`readonly elements: readonly SceneElement[]`) — all properties `readonly` per contract
 
 ### Exit Criteria: Phase 2
 
