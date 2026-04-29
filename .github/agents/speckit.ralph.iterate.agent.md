@@ -50,12 +50,18 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 4. **Implement tasks**:
    - Complete tasks in dependency order (non-[P] before parallel [P] where noted)
-   - Follow TDD when appropriate: write tests first, then implementation
+   - Apply task-level TDD for each `F###` group: T001 writes the test (RED — run `pnpm test`, confirm FAIL), T002 implements it (GREEN — run `pnpm test`, confirm PASS), T003 optionally refactors (BLUE — confirm still PASS). Complete one full cycle before opening the next `F###` group.
    - Run quality checks after each task (typecheck, lint, test as appropriate)
    - Mark each completed task by changing `[ ]` to `[x]` in tasks.md
 
-5. **Commit on user story completion**:
-   - When ALL tasks in the current user story are complete (`[x]`), create a commit:
+5. **Verify exit criteria then commit on user story completion**:
+   - When ALL tasks in the current user story are `[x]`, run the Exit Criteria gates:
+     - `pnpm typecheck` — zero errors
+     - `pnpm lint` — zero warnings (`--max-warnings 0`)
+     - `pnpm format:check` — all files pass
+     - `pnpm test` — all pass (includes `.test.ts` files AND `@example @import.meta.vitest` doctests)
+     - `pnpm test:coverage` — ≥98% lines / functions / branches / statements
+   - Only if ALL gates pass, create the commit:
 
      ```sh
      git add -A
@@ -63,7 +69,8 @@ You **MUST** consider the user input before proceeding (if not empty).
      ```
 
    - Example: `git commit -m "feat(001-ralph-loop-implement): US-001 Initialize Ralph Command"`
-   - If only partial progress, NO commit -- let the next iteration continue
+   - If any gate fails: fix the code, re-run the failing gate, then commit
+   - If only partial progress, NO commit — let the next iteration continue
 
 6. **Update progress log**:
    - Create or append to `FEATURE_DIR/progress.md`
@@ -104,11 +111,30 @@ This signals the ralph loop orchestrator to terminate successfully.
 
 ## Quality Gates
 
-- ALL changes must pass quality checks before marking tasks complete
-- DO NOT commit broken code
-- Follow existing code patterns (check Codebase Patterns in progress file)
-- Reference plan.md for architecture decisions
-- Run tests if they exist before committing
+All of the following MUST pass before marking any task complete or creating a commit:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+**Additional ESLint-enforced constraints**:
+- All source files ≤ 150 non-comment lines (`max-lines` rule)
+- JSDoc blocks contain ONLY `@example` blocks with `` ```ts @import.meta.vitest `` fences (`local/jsdoc-examples-only` rule)
+- No `@ts-ignore` / `@ts-expect-error` without adjacent `@example` doctest
+- No unused locals or parameters
+
+**TDD discipline (task-level)**:
+- Within each `F###` group: T001 = test (RED), T002 = implement (GREEN), T003 = refactor (BLUE, optional)
+- Confirm T001 FAILS before writing T002; confirm T001 PASSES after T002
+- Do NOT start the next `F###` group until the current group is GREEN
+- Do NOT batch all tests into one group and all implementations into another
+
+DO NOT commit broken code. DO NOT mark tasks complete if any gate fails.
+Reference plan.md for architecture decisions. Follow Codebase Patterns in progress.md.
 
 ## Code Style
 
@@ -124,7 +150,7 @@ Follow the patterns established in the codebase:
 | Condition | Expected Behavior |
 | --------- | ----------------- |
 | User story unclear | Ask for clarification in progress entry, mark tasks as blocked |
-| Tests fail | Report failure, do not mark task complete, no commit |
+| Tests fail | Run `pnpm test` for detail. Fix the code (never suppress). Do not mark task complete. No commit. |
 | Cannot complete story | Report partial progress, commit only if all completed tasks form coherent unit |
 | All tasks done | Commit final story, output `<promise>COMPLETE</promise>` |
 | Dependencies missing | Note in progress file, skip to next available task |

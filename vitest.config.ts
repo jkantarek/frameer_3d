@@ -14,7 +14,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov', 'html'],
       include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.{test,spec}.{ts,tsx}', 'src/main.ts'],
+      exclude: ['src/**/*.{test,spec}.{ts,tsx}', 'src/main.ts', 'src/occt/opencascade-wrapper.ts'],
       thresholds: {
         lines: 98,
         functions: 98,

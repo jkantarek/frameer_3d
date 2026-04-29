@@ -6,7 +6,10 @@
     <title>Frameer 3D</title>
   </head>
   <body>
-    <canvas id="app"></canvas>
+    <div id="viewport-container">
+      <canvas id="viewport" role="img" aria-label="3D viewport"></canvas>
+    </div>
+    <div id="scene-controls"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

@@ -28,3 +28,4 @@ Thumbs.db
 
 # WASM build artifacts
 *.wasm.map
+viewport-current.png

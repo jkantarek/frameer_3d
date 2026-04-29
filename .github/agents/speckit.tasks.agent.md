@@ -78,7 +78,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Phase 1: Setup tasks (project initialization)
    - Phase 2: Foundational tasks (blocking prerequisites for all user stories)
    - Phase 3+: One phase per user story (in priority order from spec.md)
-   - Each phase includes: story goal, independent test criteria, tests (if requested), implementation tasks
+   - Each phase includes: story goal, independent test criteria, F001 tests (TDD RED — write first, must fail), F002 implementation (GREEN), F003 refactor (optional BLUE), Exit Criteria table
    - Final Phase: Polish & cross-cutting concerns
    - All tasks must follow the strict checklist format (see Task Generation Rules below)
    - Clear file paths for each task
@@ -86,15 +86,31 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Parallel execution examples per story
    - Implementation strategy section (MVP first, incremental delivery)
 
-5. **Report**: Output path to generated tasks.md and summary:
+5. **Composability Pass** — After drafting all tasks, trace the full cross-phase dependency chain and fix any gaps **before writing the file**. For each item below, if a gap is found, update the affected task description in place — do not add new phases or reorder phases unless strictly necessary.
+
+   Check every pair of phases where a later phase consumes an artifact produced by an earlier phase:
+
+   | Gap type | What to check | Common fix |
+   |----------|--------------|------------|
+   | **CSS variable not read** | Does any task write a CSS custom property (e.g. `--pane-width`) that a prior task never wired into a CSS rule? | Add the corresponding CSS rule (e.g. `flex: 0 0 var(--pane-width)`) to the earlier setup task |
+   | **DOM element never created** | Does any later task query a DOM element (`#id`, `[role=button]`, etc.) that no earlier task adds to `index.html`? | Add the missing element to the HTML scaffold task in P001 |
+   | **Method tested too late** | Does a `main.ts` wiring task call a method (e.g. `setBackground()`) that was never given a RED test in its module's F-group? | Move the method into the module's own `T001`/`T002` pair; remove the ambiguous wording from the wiring task |
+   | **Return value not tested** | Does a factory function (e.g. `createViewport`) return a property that a later task depends on (e.g. `getSceneManager()`) but that property is never asserted in the factory's `T001`? | Add the assertion to the factory's existing `T001` |
+   | **CSS visual collapse never happens** | Does a task set a data attribute (e.g. `dataset.collapsed = 'true'`) to trigger a visual state, but no CSS rule uses that attribute? | Add the CSS rule to the earlier setup task |
+   | **`[P]` marker incorrect** | Is a task marked `[P]` (parallel) but depends on output from a task in the same phase that hasn't been completed yet? | Remove the `[P]` marker |
+
+   After completing the pass, confirm: every artifact produced in phase N is consumed correctly in phase N+1 without requiring any implementer to revisit a completed task.
+
+6. **Report**: Output path to generated tasks.md and summary:
    - Total task count
    - Task count per user story
    - Parallel opportunities identified
    - Independent test criteria for each story
    - Suggested MVP scope (typically just User Story 1)
    - Format validation: Confirm ALL tasks follow the checklist format (checkbox, ID, labels, file paths)
+   - Composability pass result: list any gaps found and how they were resolved (or "none found")
 
-6. **Check for extension hooks**: After tasks.md is generated, check if `.specify/extensions.yml` exists in the project root.
+7. **Check for extension hooks**: After tasks.md is generated, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_tasks` key
    - If the YAML cannot be parsed or is invalid, skip hook checking silently and continue normally
    - Filter out hooks where `enabled` is explicitly `false`. Treat hooks without an `enabled` field as enabled by default.
@@ -131,54 +147,65 @@ The tasks.md should be immediately executable - each task must be specific enoug
 
 **CRITICAL**: Tasks MUST be organized by user story to enable independent implementation and testing.
 
-**Tests are OPTIONAL**: Only generate test tasks if explicitly requested in the feature specification or if user requests TDD approach.
+**TDD at task level — DEFAULT**: TDD happens inside each `F###` group, not at the feature layer. Each `F###` is one logical concern. `T001` writes the test (RED — must fail), `T002` implements it (GREEN — makes it pass), `T003` optionally refactors (BLUE). Complete one full cycle before opening the next `F###`. Do NOT batch all tests into one F group and all implementation into another — that over-builds.
 
 ### Checklist Format (REQUIRED)
 
 Every task MUST strictly follow this format:
 
 ```text
-- [ ] [TaskID] [P?] [Story?] Description with file path
+- [ ] P###F###T### [P?] Description with file path
 ```
 
-**Format Components**:
+**ID Segments** — `P###F###T###`:
 
-1. **Checkbox**: ALWAYS start with `- [ ]` (markdown checkbox)
-2. **Task ID**: Sequential number (T001, T002, T003...) in execution order
-3. **[P] marker**: Include ONLY if task is parallelizable (different files, no dependencies on incomplete tasks)
-4. **[Story] label**: REQUIRED for user story phase tasks only
-   - Format: [US1], [US2], [US3], etc. (maps to user stories from spec.md)
-   - Setup phase: NO story label
-   - Foundational phase: NO story label  
-   - User Story phases: MUST have story label
-   - Polish phase: NO story label
-5. **Description**: Clear action with exact file path
+| Segment | Meaning | Resets |
+|---------|---------|--------|
+| `P###` | Phase number (001, 002, …) | Never |
+| `F###` | Feature / logical group within phase (001, 002, …) | Per phase |
+| `T###` | Task within feature (001, 002, …) | Per feature |
+
+**Convention within every `F###` group**:
+- `T001` — Write test / doctest for this one concern. Must FAIL before T002 starts.
+- `T002` — Implement only what makes T001 pass.
+- `T003` — (Optional) Refactor while keeping T001 passing.
+
+**Other Format Components**:
+
+1. **Checkbox**: ALWAYS start with `- [ ]`
+2. **Task ID**: `P###F###T###` following the numbering rules above
+3. **[P] marker**: Include ONLY if task touches different files with no unresolved dependencies
+4. **Description**: Clear action with exact file path (story identity is encoded in P/F — no `[USN]` label needed)
 
 **Examples**:
 
-- ✅ CORRECT: `- [ ] T001 Create project structure per implementation plan`
-- ✅ CORRECT: `- [ ] T005 [P] Implement authentication middleware in src/middleware/auth.py`
-- ✅ CORRECT: `- [ ] T012 [P] [US1] Create User model in src/models/user.py`
-- ✅ CORRECT: `- [ ] T014 [US1] Implement UserService in src/services/user_service.py`
-- ❌ WRONG: `- [ ] Create User model` (missing ID and Story label)
-- ❌ WRONG: `T001 [US1] Create model` (missing checkbox)
-- ❌ WRONG: `- [ ] [US1] Create User model` (missing Task ID)
-- ❌ WRONG: `- [ ] T001 [US1] Create model` (missing file path)
+- ✅ CORRECT: `- [ ] P001F001T001 Create project directory structure per implementation plan`
+- ✅ CORRECT: `- [ ] P001F002T001 [P] Configure ESLint in eslint.config.mjs`
+- ✅ CORRECT: `- [ ] P003F001T001 [P] Write inline doctest for clamp() in src/utils/math.ts`
+- ✅ CORRECT: `- [ ] P003F001T002 [P] Implement clamp() in src/utils/math.ts`
+- ✅ CORRECT: `- [ ] P003F002T001 Write unit test for SceneService in src/renderer/scene.test.ts`
+- ✅ CORRECT: `- [ ] P003F002T002 Implement SceneService in src/renderer/scene.ts (depends on P003F001T002)`
+- ❌ WRONG: `- [ ] T001 Create model` (old T-only format — missing P and F segments)
+- ❌ WRONG: `P003F001T001 Write test` (missing checkbox)
+- ❌ WRONG: `- [ ] P003F001T001 Write test` (missing file path)
+- ❌ WRONG: `- [ ] P003F002T001 [US1] Implement model` (story label redundant — story is encoded in P/F)
+- ❌ WRONG: Grouping ALL tests into F001 and ALL implementation into F002 (that’s feature-layer TDD, not task-level)
 
 ### Task Organization
 
 1. **From User Stories (spec.md)** - PRIMARY ORGANIZATION:
-   - Each user story (P1, P2, P3...) gets its own phase
-   - Map all related components to their story:
-     - Models needed for that story
-     - Services needed for that story
-     - Interfaces/UI needed for that story
-     - If tests requested: Tests specific to that story
-   - Mark story dependencies (most stories should be independent)
+   - Each user story (P1, P2, P3...) gets its own phase (P003, P004, …)
+   - Decompose the story into its smallest independently testable concerns
+   - Each concern becomes one `F###` group:
+     - `T001` — write test / doctest for that concern (RED)
+     - `T002` — implement only what makes T001 pass (GREEN)
+     - `T003` — refactor (BLUE, optional)
+   - Sequence F groups: pure types/data first, then services that depend on them, then entry points / wiring last
+   - Mark `[P]` on `T001`/`T002` pairs when they touch entirely different files (no shared dependency)
 
 2. **From Contracts**:
    - Map each interface contract → to the user story it serves
-   - If tests requested: Each interface contract → contract test task [P] before implementation in that story's phase
+   - Each interface contract becomes its own `F###` group: T001 writes the contract test (RED), T002 implements it (GREEN)
 
 3. **From Data Model**:
    - Map each entity to the user story(ies) that need it
@@ -192,9 +219,27 @@ Every task MUST strictly follow this format:
 
 ### Phase Structure
 
-- **Phase 1**: Setup (project initialization)
-- **Phase 2**: Foundational (blocking prerequisites - MUST complete before user stories)
-- **Phase 3+**: User Stories in priority order (P1, P2, P3...)
-  - Within each story: Tests (if requested) → Models → Services → Endpoints → Integration
-  - Each phase should be a complete, independently testable increment
+- **P001**: Setup (project initialization)
+- **P002**: Foundational (blocking prerequisites — MUST complete before user stories)
+- **P003+**: User Stories in priority order (P1, P2, P3…) — each user story is one phase
+  - Decompose the story into concerns; each concern = one `F###` group
+  - Within each `F###`: T001 (RED) → T002 (GREEN) → T003 (BLUE, optional) — complete before next `F###`
+  - Sequence F groups: data types → services → entry points / wiring
+  - **Exit Criteria**: Run all quality gates after all F groups are GREEN; fix before commit
 - **Final Phase**: Polish & Cross-Cutting Concerns
+
+**Exit Criteria table to generate into every user story phase**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+Additional ESLint-enforced constraints (include in every story’s Exit Criteria):
+- All new source files ≤ 150 non-comment lines
+- JSDoc blocks contain ONLY `@example` blocks with `` ```ts @import.meta.vitest `` fences
+- No `@ts-ignore` / `@ts-expect-error` without adjacent `@example` doctest
+- No unused locals or parameters

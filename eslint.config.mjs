@@ -10,7 +10,15 @@ const localPlugin = {
 export default tseslint.config(
   // Files to never lint
   {
-    ignores: ['dist/**', 'coverage/**', 'eslint.config.mjs', '*.config.js', '*.config.cjs', '.specify/**', '.github/**'],
+    ignores: [
+      'dist/**',
+      'coverage/**',
+      'eslint.config.mjs',
+      '*.config.js',
+      '*.config.cjs',
+      '.specify/**',
+      '.github/**',
+    ],
   },
 
   // Base JS rules

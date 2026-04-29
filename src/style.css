@@ -1,0 +1,28 @@
+body {
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+}
+
+#viewport-container {
+  width: 100vw;
+  height: 100dvh;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#scene-controls {
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 280px;
+}
+
+#drag-handle {
+  display: none;
+}
