@@ -65,5 +65,17 @@ Started: 2026-04-29 08:49:01
 - specs/002-elements-floating-panel/tasks.md (all P003 tasks marked [x])
 **Learnings**:
 - `@typescript-eslint/no-unnecessary-condition` fires on `let changed = false` mutated in `.map`/`.filter` callbacks; use `findElement` guard + pure helper instead
-- `max-lines: 150` counts blank lines; consolidate intra-describe blank lines if needed to stay under limit
 ---
+
+## Iteration 4 - 2026-04-29 (follow-up to Phase 3)
+**User Story**: Phase 3 follow-up — 100% branch coverage + final quality gates
+**Tasks Completed**:
+- Refactored `removeFromArray` / `updateInArray` to use `for...of` loops (fixes `no-unnecessary-condition` lint error: TypeScript doesn't track `let changed` mutations in `.map`/`.filter` callbacks)
+- Fixed `expect(() => save(...)).not.toThrow()` → block body form (fixes `no-confusing-void-expression`)
+- Consolidated 3 `findElement` tests into 1 covering the false-branch of `if (found !== undefined)` (sibling with non-matching children); achieves 100% branch coverage on ElementStore.ts
+**Commit**: e4a6b2d
+**Files Changed**:
+- src/elements/ElementStore.test.ts (combined findElement tests, format fixes)
+**Learnings**:
+- TypeScript does NOT narrow `let changed = false` as mutated inside `.map()`/`.filter()` callbacks → `no-unnecessary-condition` fires; `for...of` loops are the fix
+- The false-branch of `if (found !== undefined)` in recursive DFS requires a test where a sibling element has children that do NOT match the search target
