@@ -123,3 +123,30 @@ Started: 2026-04-29 08:49:01
 - Extracting a clickPicker(sm, label) helper cuts Sphere/Cylinder tests to 3 lines each, enabling ≤150 line budget
 - `readonly [string, () => SceneElement][]` is the correct syntax (not `ReadonlyArray<>`)
 - argsIgnorePattern '^_' must be explicit in typescript-eslint v8 strict preset
+
+---
+
+## Iteration 4 (continued) - Phase 6 (P006): Edit Element Attributes via Control Pane
+**User Story**: US-004 — Edit Element Attributes via Control Pane
+**Tasks Completed**:
+- [x] P006F001T001: `src/elements/ElementControls.test.ts` — 6 tests (RED → GREEN)
+- [x] P006F001T002: `src/elements/ElementControls.ts` — `createElementControls(folder)` with bind/clear
+- [x] P006F002T001: `src/elements/ElementPanel.selection.test.ts` — 4 selection tests (RED → GREEN)
+- [x] P006F002T002: Extended `ElementPanel.ts` with row selection, aria-selected, controls wiring
+- [x] P006F003T001: `src/elements/index.ts` verified complete (already had all re-exports)
+**Quality Gates**:
+- pnpm typecheck: ✅ zero errors
+- pnpm lint: ✅ 0 warnings
+- pnpm test: ✅ 119 tests pass
+- pnpm test:coverage: ✅ 100% all metrics
+**Commit**: 3df4be6
+**Files Changed**:
+- src/elements/ElementControls.ts (new — 58 lines)
+- src/elements/ElementControls.test.ts (new — 75 lines)
+- src/elements/ElementPanel.ts (updated — row click reads `getAttribute('data-id')` at click time)
+- src/elements/ElementPanel.selection.test.ts (new — 87 lines)
+**Learnings**:
+- Tweakpane v4 renders number inputs as `type="text"` with class `tp-txtv_i`, NOT `type="number"`
+- Dispatching `new Event('change', { bubbles: true })` on a Tweakpane text input fires the binding's onChange callback in jsdom
+- Use `getAttribute('data-id')` in the click listener (not a closed-over `el.id`) to allow tests to exercise defensive branches by modifying `data-id` before clicking
+- `aria-selected="false"` (not removal of attribute) is the correct ARIA pattern for deselected list rows
