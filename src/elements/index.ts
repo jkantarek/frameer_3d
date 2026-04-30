@@ -21,3 +21,5 @@ export { createElementControls } from './ElementControls.js';
 export type { ElementControlsApi } from './ElementControls.js';
 export { createElementPanel } from './ElementPanel.js';
 export type { ElementPanelApi } from './ElementPanel.js';
+export { createSelectionHighlight } from './SelectionHighlight.js';
+export type { SelectionHighlightApi } from './SelectionHighlight.js';
