@@ -1,7 +1,7 @@
 # Data Model: Elements Floating Panel
 
 **Feature**: `002-elements-floating-panel`
-**Date**: 2026-04-29
+**Date**: 2026-04-29 (updated 2026-04-30)
 
 ---
 
@@ -107,6 +107,7 @@ Primitives created by `PrimitiveFactory` pre-populate attributes as follows:
 | `parametric_attributes` | `geometry.width`   | `"1"`  | number |
 | `parametric_attributes` | `geometry.height`  | `"1"`  | number |
 | `parametric_attributes` | `geometry.depth`   | `"1"`  | number |
+| `parametric_attributes` | `material.color`   | `"#888888"` | color |
 | `fixed_attributes`    | `geometry.type`     | `"box"` | —     |
 | `origin_attributes`   | `position.x`        | `0`    | —      |
 | `origin_attributes`   | `position.y`        | `0`    | —      |
@@ -117,6 +118,7 @@ Primitives created by `PrimitiveFactory` pre-populate attributes as follows:
 | Attribute Array       | Key                 | Value  | Type   |
 |-----------------------|---------------------|--------|--------|
 | `parametric_attributes` | `geometry.radius`  | `"1"`  | number |
+| `parametric_attributes` | `material.color`   | `"#888888"` | color |
 | `fixed_attributes`    | `geometry.type`     | `"sphere"` | — |
 | `origin_attributes`   | `position.x`        | `0`    | —      |
 | `origin_attributes`   | `position.y`        | `0`    | —      |
@@ -128,10 +130,23 @@ Primitives created by `PrimitiveFactory` pre-populate attributes as follows:
 |-----------------------|---------------------|---------|--------|
 | `parametric_attributes` | `geometry.radius`  | `"0.5"` | number |
 | `parametric_attributes` | `geometry.height`  | `"2"`   | number |
+| `parametric_attributes` | `material.color`   | `"#888888"` | color |
 | `fixed_attributes`    | `geometry.type`     | `"cylinder"` | — |
 | `origin_attributes`   | `position.x`        | `0`     | —      |
 | `origin_attributes`   | `position.y`        | `0`     | —      |
 | `origin_attributes`   | `position.z`        | `0`     | —      |
+
+### Plane
+
+| Attribute Array       | Key                 | Value  | Type   |
+|-----------------------|---------------------|--------|--------|
+| `parametric_attributes` | `geometry.width`   | `"2"`  | number |
+| `parametric_attributes` | `geometry.height`  | `"2"`  | number |
+| `parametric_attributes` | `material.color`   | `"#888888"` | color |
+| `fixed_attributes`    | `geometry.type`     | `"plane"` | — |
+| `origin_attributes`   | `position.x`        | `0`    | —      |
+| `origin_attributes`   | `position.y`        | `0`    | —      |
+| `origin_attributes`   | `position.z`        | `0`    | —      |
 
 ---
 
@@ -199,3 +214,95 @@ boundary modules (`ElementRenderer`, `ElementControls`).
 - Parse failure → `console.warn` + return empty store.
 - `setItem` quota exceeded → `console.warn` + silently skip save.
 - Future migration: bump to `frameer3d.v2.elements` if schema changes.
+
+---
+
+## System Settings Entity
+
+### `ThemeValue`
+
+```ts
+type ThemeValue = 'dark' | 'light';
+```
+
+### `SystemSettingsData`
+
+Persisted to `localStorage` under key `frameer3d.v1.settings`.
+
+```ts
+interface SystemSettingsData {
+  theme: ThemeValue;         // active theme; default 'dark'
+  followSystem: boolean;     // if true, always match OS prefers-color-scheme
+}
+```
+
+**Validation rules**:
+- `theme` must be `'dark'` or `'light'`.
+- `followSystem` is boolean; defaults to `false`.
+- Fallback on parse failure: `{ theme: 'dark', followSystem: false }`.
+
+**State Transitions**:
+
+```
+SystemSettingsData { theme: 'dark', followSystem: false }
+    │
+    ▼ user clicks "Light"
+SystemSettingsData { theme: 'light', followSystem: false }
+    │
+    ▼ user enables "Follow system" (OS is dark)
+SystemSettingsData { theme: 'dark', followSystem: true }
+    │
+    ▼ OS switches to light
+SystemSettingsData { theme: 'light', followSystem: true }   ← updated automatically
+```
+
+---
+
+## Updated Module Layout
+
+```
+src/elements/
+├── ElementTypes.ts        — AttributeType, ParametricAttribute, FixedAttribute,
+│                            OriginAttribute, SceneElement, ElementStoreData
+│                            (no changes — color type already present in AttributeType)
+├── ElementStore.ts        — load, save, addElement, removeElement, updateElement, findElement
+├── ElementPanel.ts        — floating panel DOM + element list + "+" (bottom) + per-row "×"
+├── PrimitiveFactory.ts    — createBox, createSphere, createCylinder, createPlane
+│                            (all include material.color attribute)
+├── ElementRenderer.ts     — SceneManager integration + material.color + selection highlight
+├── SelectionHighlight.ts  — (new) double-mesh BackSide outline; attach/detach API
+├── ElementControls.ts     — Tweakpane bindings + label binding at top
+└── index.ts               — public API re-exports
+
+src/scene/
+├── SceneManager.ts        — (unchanged)
+├── SceneRenderer.ts       — (unchanged)
+└── TransformGizmo.ts      — (new) TransformControls wrapper; attach/detach/setMode
+
+src/system/
+├── SystemSettings.ts      — (new) loadSettings, saveSettings, applyTheme, detectSystemTheme
+└── SystemPanel.ts         — (new) bottom-left Tweakpane panel; theme + followSystem bindings
+
+src/viewport/
+├── Viewport.ts            — (updated) creates TransformGizmo; exposes getTransformGizmo()
+└── ViewportResize.ts      — (unchanged)
+```
+
+### Updated Dependency Graph
+
+```
+ElementTypes.ts            ← no deps (pure types)
+ElementStore.ts            ← ElementTypes
+PrimitiveFactory.ts        ← ElementTypes, ulid
+SelectionHighlight.ts      ← ElementTypes, three (boundary)
+ElementRenderer.ts         ← ElementTypes, SceneManager, SelectionHighlight (three boundary)
+ElementControls.ts         ← ElementTypes, ControlPane (tweakpane boundary)
+ElementPanel.ts            ← ElementTypes, ElementStore, PrimitiveFactory,
+                             ElementRenderer, ElementControls, ViewportApi
+TransformGizmo.ts          ← three/addons/controls/TransformControls
+Viewport.ts                ← TransformGizmo, SceneManager, SceneRenderer (three boundary)
+SystemSettings.ts          ← no deps (pure + DOM boundary for matchMedia)
+SystemPanel.ts             ← SystemSettings, tweakpane
+```
+
+No circular dependencies. `system/` has no imports from `elements/` or `scene/`.

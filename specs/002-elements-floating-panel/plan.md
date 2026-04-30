@@ -1,157 +1,268 @@
-# Implementation Plan: Elements Floating Panel
+# Implementation Plan: Elements Floating Panel — UI Improvements
 
-**Branch**: `002-elements-floating-panel` | **Date**: 2026-04-29 | **Spec**: [spec.md](spec.md)
+**Branch**: `002-elements-floating-panel` | **Date**: 2026-04-30
+**Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/002-elements-floating-panel/spec.md`
+
+---
 
 ## Summary
 
-Add a left-side floating **Elements** panel to the Frameer 3D shell. A `+` button lets
-users add primitive shapes (box, sphere, cylinder). All scene element data is persisted
-in `localStorage` via a centralized `ElementStore` — a pure-data, immutable-update module
-with no Three.js or DOM imports. Rendering and controls are driven entirely from the
-store. Element attributes are ULID-identified and typed for direct Tweakpane binding when
-an element is selected. The recursive `SceneElement` schema supports arbitrary nesting
-through `child_elements`.
+Extend the existing Elements Floating Panel with: per-element inline remove buttons
+(visible only on selection), "+" button relocated to the bottom of the scene list,
+label editing and material color in the control pane, selection highlight via
+double-mesh BackSide outline, Three.js TransformControls gizmo for translate/rotate/scale,
+a `Plane` primitive type, and a bottom-left System Settings panel for dark/light theming
+with OS `prefers-color-scheme` passthrough.
+
+---
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.5 (strict mode — all flags in `tsconfig.app.json`)
-**Primary Dependencies**: `three`, `tweakpane`, `@tweakpane/plugin-essentials`, `ulid` (new — MIT, ~2.5 KB, zero deps), Vite 6, Vitest 4 + vite-plugin-doctest, pnpm 10
-**Storage**: `localStorage` key `frameer3d.v1.elements` (JSON `ElementStoreData`); existing `frameer3d.v1.layout` unchanged
-**Testing**: Vitest + jsdom; 98%+ coverage required; pure-function store logic is fully testable; DOM panel tested via jsdom; `ElementRenderer` tested via `SceneManager` interface seam
-**Target Platform**: Browser (Chrome/Firefox/Safari latest); WebGL 2; no backend
-**Project Type**: Single-page web application (local-first, no backend)
-**Performance Goals**: Panel list renders without layout thrash; `absolute` positioning removes panel from normal flow; renderer sync is O(n) over element count
-**Constraints**: Max 150 non-comment source lines per file; one public concern per file; all JSDoc must be `@example` doctests only; no mocks of internal dependencies
-**New Dependency**: `ulid` — add to `dependencies` in `package.json`
+**Language/Version**: TypeScript 5.x (strict, all extra flags enabled — see `tsconfig.app.json`)
+**Primary Dependencies**: Three.js r169, Tweakpane v4, `@tweakpane/plugin-essentials`,
+  `ulid` v3, Vite 6, Vitest 3, `vite-plugin-doctest`
+**Storage**: `localStorage` (elements key `frameer3d.v1.elements`;
+  settings key `frameer3d.v1.settings`)
+**Testing**: Vitest + `vite-plugin-doctest` inline doctests; 98% coverage enforced
+**Target Platform**: Modern browser (Chrome/Firefox/Safari with WebGL 2)
+**Project Type**: Browser-based 3D viewer + editor (single-page app)
+**Performance Goals**: 60 fps render loop; no frame drops during TransformControls drag
+**Constraints**:
+  - `max-lines: 150` (non-comment lines) per file — hard ESLint limit
+  - No mocks in tests — dependency injection or isolated pure functions only
+  - 98% line / branch / function / statement coverage
+  - `exactOptionalPropertyTypes`, `noUncheckedIndexedAccess` in strict mode
+  - Pre-commit gate: Prettier + ESLint zero-warnings
+
+---
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+The project constitution (`/.specify/memory/constitution.md`) contains only unfilled
+template placeholders. No constitution-level gates are defined.
 
-Based on AGENTS.md coding standards:
+**AGENTS.md gates that apply to this feature**:
 
 | Gate | Status | Notes |
 |------|--------|-------|
-| Max 150 non-comment lines per file | PASS — 7 files in `src/elements/`; each < 130 lines per data-model.md module map | |
-| One public concern per file | PASS — types, store, panel, factory, renderer, controls, index each have one purpose | |
-| TypeScript strict mode | PASS — `ulid` ships native TS types; recursive `SceneElement` compiles under strict + exactOptionalPropertyTypes | |
-| JSDoc @example-only doctests | PASS — all public store functions and factory functions will carry `@example @import.meta.vitest` blocks | |
-| Coverage ≥ 98% | PASS — `ElementStore` is pure functions (100% testable); `ElementRenderer` uses SceneManager seam; `ElementPanel` DOM tested in jsdom | |
-| No mocks of internal dependencies | PASS — `ElementRenderer` injected with `SceneManager` (public interface); `ElementControls` injected with `FolderApi` (public interface) | |
-| No backend dependencies | PASS — localStorage only; `ulid` uses `crypto.getRandomValues` (no fetch) | |
+| `max-lines: 150` | WATCH | `ElementPanel.ts` (130 loc) and `PrimitiveFactory.ts` (109 loc) will grow — plan splits below |
+| 98% coverage | PASS | Every new module requires tests; see module list |
+| No mocks in tests | PASS | All new modules are pure-function or inject dependencies |
+| No `@ts-ignore` | PASS | No suppressions planned |
+| Executable doctests only | PASS | All `@example` blocks will use `@import.meta.vitest` |
 
-**Post-Phase-1 re-check**: All gates pass. The 7-file `elements/` domain splits cleanly.
-`ElementStore` has zero external deps (pure TS). `ElementRenderer` and `ElementControls`
-each have exactly one external boundary (Three.js / Tweakpane respectively).
+**File-size risk plan**:
+
+- `ElementPanel.ts` (130 → ~145 lines after per-row remove + gizmo wiring): split
+  `buildElementItem` + `renderList` helpers into `src/elements/ElementPanelList.ts`
+  if the main file exceeds 130 non-comment lines.
+- `PrimitiveFactory.ts` (109 → ~130 lines after `createPlane` + color attribute):
+  extracting the `originAttrs()` + `numAttr()` helpers into
+  `src/elements/PrimitiveHelpers.ts` is acceptable if it exceeds 130 lines.
+- `ElementControls.ts` (63 → ~80 lines after label binding): safe, no split needed.
+- `ElementRenderer.ts` (80 → ~100 lines after color + `setSelected`): safe.
+- New files (`SelectionHighlight.ts`, `TransformGizmo.ts`, `SystemSettings.ts`,
+  `SystemPanel.ts`) are each scoped to a single concern and will stay well under 150 lines.
+
+---
 
 ## Project Structure
 
 ### Documentation (this feature)
 
-```text
+```
 specs/002-elements-floating-panel/
-├── plan.md              # This file
-├── spec.md              # Feature specification
-├── research.md          # Phase 0 output (ULID, CSS overlay, Tweakpane, localStorage)
-├── data-model.md        # Phase 1 output (types, primitives, module map)
+├── plan.md          ← this file
+├── spec.md          ← updated with R6–R10
+├── research.md      ← updated with R6–R10 findings
+├── data-model.md    ← updated with color attr, Plane, SystemSettingsData
+├── quickstart.md    ← developer how-to
 ├── contracts/
-│   └── elements-api.md  # Phase 1 output (TypeScript API contracts)
-└── tasks.md             # Phase 2 output (/speckit.tasks — NOT created by /speckit.plan)
+│   ├── elements-api.md        ← updated with SelectionHighlight, updated interfaces
+│   └── system-settings-api.md ← new
+└── tasks.md         ← generated by /speckit.tasks
 ```
 
 ### Source Code (repository root)
 
-```text
+```
 src/
-├── elements/              ← NEW domain
-│   ├── ElementTypes.ts    ← all shared types (AttributeType, SceneElement, etc.)
-│   ├── ElementStore.ts    ← localStorage load/save + pure immutable-update functions
-│   ├── PrimitiveFactory.ts← createBox / createSphere / createCylinder (uses ulid)
-│   ├── ElementRenderer.ts ← maps ElementStoreData → SceneManager.addObject calls
-│   ├── ElementControls.ts ← maps SceneElement → Tweakpane FolderApi bindings
-│   ├── ElementPanel.ts    ← floating panel DOM overlay + coordinator
-│   └── index.ts           ← public re-exports
-├── controls/
-│   └── ControlPane.ts     ← unchanged; addFolder used by main.ts for "Element" folder
+├── elements/
+│   ├── ElementTypes.ts        — NO CHANGE (color type already in AttributeType)
+│   ├── ElementStore.ts        — NO CHANGE
+│   ├── PrimitiveFactory.ts    — UPDATE: createPlane(), material.color on all primitives
+│   ├── SelectionHighlight.ts  — NEW: double-mesh BackSide outline
+│   ├── ElementRenderer.ts     — UPDATE: color, setSelected(), selection highlight delegation
+│   ├── ElementControls.ts     — UPDATE: label binding at top
+│   ├── ElementPanel.ts        — UPDATE: per-row × remove, + at bottom, gizmo wiring
+│   └── index.ts               — UPDATE: export SelectionHighlight, createPlane
 ├── scene/
-│   └── SceneManager.ts    ← unchanged; injected into ElementRenderer
-└── main.ts                ← add createElementPanel(...) call
+│   └── TransformGizmo.ts      — NEW: TransformControls wrapper
+├── system/
+│   ├── SystemSettings.ts      — NEW: loadSettings, saveSettings, applyTheme, detectSystemTheme
+│   └── SystemPanel.ts         — NEW: bottom-left Tweakpane panel
+├── viewport/
+│   └── Viewport.ts            — UPDATE: create TransformGizmo, expose getTransformGizmo()
+├── main.ts                    — UPDATE: applyTheme on startup, pass transformGizmo to panel
+└── style.css                  — UPDATE: CSS custom properties for dark/light themes
 ```
 
-**Structure Decision**: Single-project; new `src/elements/` domain alongside existing
-`controls/`, `scene/`, `layout/`, `viewport/`, `utils/`, `occt/` domains.
+**Structure Decision**: Single-project layout; all changes stay within `src/`. New
+`src/system/` domain added for theme-settings concerns. `TransformGizmo.ts` placed in
+`src/scene/` because it imports Three.js directly and depends on camera and renderer.
+
+---
+
+## Phase 0: Research
+
+All research complete. See [research.md](research.md).
+
+### Summary of decisions
+
+| Research Item | Decision |
+|---------------|----------|
+| R6 — TransformControls | Use `three/addons/controls/TransformControls.js`; wire `dragging-changed` to disable OrbitControls |
+| R7 — Selection outline | Double-mesh BackSide technique at scale 1.015; no EffectComposer needed |
+| R8 — Tweakpane color | CSS hex string auto-detected by Tweakpane v4; no `{ view: 'color' }` needed |
+| R8 — Tweakpane label | Plain `addBinding(proxy, 'label', { label: 'Name' })` creates text input |
+| R9 — Plane primitive | `PlaneGeometry(w, h)` + `DoubleSide` material; default XY plane orientation |
+| R10 — Theme toggle | `data-theme` on `<html>` + CSS custom properties; `matchMedia` for system passthrough |
+
+---
+
+## Phase 1: Design
+
+### Data Model
+
+No changes to `ElementTypes.ts` — `AttributeType` already includes `'color'`; no new
+interface fields needed. Changes are behavioural: `material.color` added to all factory
+functions; `ElementRenderer` reads it to apply mesh colour.
+
+Full entity specifications in [data-model.md](data-model.md).
+
+### API Contracts
+
+Full interface specifications in:
+- [contracts/elements-api.md](contracts/elements-api.md) — updated
+- [contracts/system-settings-api.md](contracts/system-settings-api.md) — new
+
+### Key Implementation Notes
+
+#### `PrimitiveFactory.ts` changes
+
+Add `material.color` parametric attribute (type `'color'`, default `"#888888"`) to
+`createBox`, `createSphere`, `createCylinder`. Add `createPlane` with
+`geometry.width = "2"`, `geometry.height = "2"`, `geometry.type = "plane"`.
+
+#### `ElementRenderer.ts` changes
+
+1. `buildGeometry`: add `"plane"` case using `THREE.PlaneGeometry(w, h)`.
+2. `syncElement`: read `material.color` from `parametric_attributes`; apply to
+   `new THREE.MeshStandardMaterial({ color: colorValue })`. For plane geometry,
+   set `side: THREE.DoubleSide`.
+3. Add `setSelected(id: string | undefined)`: delegate to `SelectionHighlight`.
+4. Expose `setSelected` on `ElementRendererApi`.
+
+#### `SelectionHighlight.ts` (new)
+
+```
+createSelectionHighlight() → { attach(mesh), detach(mesh), clear(sceneManager, id) }
+```
+- `attach`: clone geometry, BackSide material `0x00aaff`, scale `1.015`, name
+  `'__selection-outline__'`, add as child of mesh.
+- `detach`: `mesh.getObjectByName('__selection-outline__')` then `mesh.remove`.
+- `clear`: get mesh from SceneManager by id, then `detach`.
+
+#### `ElementControls.ts` changes
+
+At the top of `bind()`, before attribute bindings, add:
+```ts
+const labelProxy = { label: element.label };
+folder.addBinding(labelProxy, 'label', { label: 'Name' }).on('change', (ev) => {
+  current = { ...current, label: ev.value };
+  onChange(current);
+});
+```
+
+#### `ElementPanel.ts` changes
+
+1. **Remove button per row**: In `buildElementItem`, after the element button, add a
+   `×` button. Use CSS `visibility: hidden/visible` toggled by `aria-selected`.
+   Clicking calls `onRemove(el.id)`.
+2. **+ button at bottom**: Move `addBtn` + `pickerFolder` DOM creation to after the
+   `elementsFolder` (swap creation order).
+3. **Transform gizmo wiring**: Accept `transformGizmo?: TransformGizmoApi` as 4th param.
+   In `onSelect`: `transformGizmo?.attach(sceneManager.getObject(element.id))`.
+   Register `onObjectChange` → update `origin_attributes`, `save(state)` (no sync).
+   Register `onDragEnd` → `renderer.sync(state)`.
+4. **Selection highlight**: In `onSelect`: `renderer.setSelected(element.id)`.
+   In remove handler: `renderer.setSelected(undefined)`.
+
+> Size watch: if `ElementPanel.ts` exceeds 130 non-comment lines after these changes,
+> extract `buildElementItem` + `renderList` into `ElementPanelList.ts`.
+
+#### `TransformGizmo.ts` (new)
+
+Factory `createTransformGizmo(camera, domElement, orbitControls)`:
+- Creates `TransformControls(camera, domElement)`.
+- Wires `dragging-changed` → `orbitControls.enabled = !dragging`.
+- Exposes `attach`, `detach`, `setMode`, `getHelper`, `onObjectChange`, `onDragEnd`,
+  `dispose`.
+
+#### `Viewport.ts` changes
+
+1. `import { createTransformGizmo } from '../scene/TransformGizmo.js'`.
+2. `const gizmo = createTransformGizmo(camera, canvas, controls)`.
+3. `sceneManager.addObject('__transform-gizmo__', gizmo.getHelper())`.
+4. Add `getTransformGizmo(): TransformGizmoApi` to `ViewportApi` and return object.
+
+#### `SystemSettings.ts` (new, pure)
+
+```ts
+export function loadSettings(): SystemSettingsData
+export function saveSettings(data: SystemSettingsData): void
+export function applyTheme(data: SystemSettingsData): void  // sets document.documentElement.dataset['theme']
+export function detectSystemTheme(): ThemeValue             // reads window.matchMedia
+```
+
+#### `SystemPanel.ts` (new)
+
+Creates Tweakpane `Pane` at `position: fixed; bottom: 1rem; left: 1rem`.
+Binds `theme` (list) and `followSystem` (checkbox). On every change: saves, applies
+theme, fires `onThemeChange`. Manages `matchMedia` listener for system passthrough.
+
+#### `style.css` changes
+
+```css
+:root {
+  --bg: #1a1a2e; --fg: #e8e8e8; --panel-bg: #16213e;
+  --panel-border: #0f3460; --accent: #00aaff;
+}
+[data-theme="light"] {
+  --bg: #f4f4f4; --fg: #1a1a1a; --panel-bg: #ffffff;
+  --panel-border: #cccccc; --accent: #0066cc;
+}
+```
+
+#### `main.ts` changes
+
+1. `applyTheme(loadSettings())` as first line of `main()`.
+2. Pass `viewport.getTransformGizmo()` to `createElementPanel` as 4th arg.
+3. Call `createSystemPanel(settings, (theme) => sceneManager.setBackground(...))`.
+
+---
+
+## Post-Design Constitution Re-check
+
+All AGENTS.md constraints remain satisfied:
+- File sizes planned to stay ≤ 130 non-comment lines before split triggers.
+- No new circular dependencies introduced.
+- System domain is fully isolated from elements/scene.
+- All new modules have testable pure functions or injected boundaries.
+
+---
 
 ## Complexity Tracking
 
-No constitution violations in this feature.
-
----
-
-## Phase 0: Research (complete — see research.md)
-
-| Unknown | Resolution |
-|---------|------------|
-| ULID library | `ulid` npm (MIT, ~2.5 KB, zero deps, native TS types) |
-| Recursive TypeScript type | Native `interface SceneElement { child_elements: SceneElement[] }` — no gotchas |
-| CSS floating panel | `position: absolute` inside `position: relative` container; `pointer-events: none` passthrough |
-| Tweakpane v4 clear + rebuild | `folder.children.forEach(b => b.dispose())` then rebuild; must dispose-and-rebuild on selection change |
-| localStorage capacity | 5 MiB per origin; safe for thousands of elements |
-
----
-
-## Phase 1: Design (complete — see data-model.md and contracts/elements-api.md)
-
-### Data Model Summary
-
-```
-ElementStoreData                    ← localStorage root { elements: SceneElement[] }
-  └── SceneElement                  ← recursive; ULID id; label; description
-        ├── parametric_attributes[] ← ParametricAttribute { id, uri_key, value, type }
-        ├── fixed_attributes[]      ← FixedAttribute { id, uri_key, value }
-        ├── origin_attributes[]     ← OriginAttribute { id, dim_key, dim_value: number }
-        └── child_elements[]        ← SceneElement (recursive)
-```
-
-### Interface Contracts Summary
-
-| Module | Key Exports |
-|--------|-------------|
-| `ElementTypes.ts` | `AttributeType`, `ParametricAttribute`, `FixedAttribute`, `OriginAttribute`, `SceneElement`, `ElementStoreData` |
-| `ElementStore.ts` | `load()`, `save()`, `addElement()`, `removeElement()`, `updateElement()`, `findElement()` |
-| `PrimitiveFactory.ts` | `createBox()`, `createSphere()`, `createCylinder()` |
-| `ElementRenderer.ts` | `createElementRenderer(sceneManager): ElementRendererApi` → `{ sync(data) }` |
-| `ElementControls.ts` | `createElementControls(folder): ElementControlsApi` → `{ bind(el, onChange), clear() }` |
-| `ElementPanel.ts` | `createElementPanel(container, sceneManager, folder): ElementPanelApi` |
-| `index.ts` | Re-exports all public symbols |
-
-### `main.ts` Integration Point
-
-```ts
-const elementFolder = controlPane.addFolder('Element');
-const viewportContainer = canvas.parentElement as HTMLElement;
-createElementPanel(viewportContainer, sceneManager, elementFolder);
-```
-
-### CSS Integration Point
-
-```css
-/* In style.css: */
-#viewport-container { position: relative; }
-
-#elements-panel {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 220px;
-  z-index: 10;
-  pointer-events: none;
-}
-
-#elements-panel > * { pointer-events: auto; }
-```
-
----
-
-## Phase 2: Tasks (generated by `/speckit.tasks`)
-
-*Not yet generated. Run `/speckit.tasks` to produce `tasks.md`.*
+No constitution violations. No unjustified complexity.

@@ -1,8 +1,9 @@
-# Tasks: Elements Floating Panel
+# Tasks: Elements Floating Panel — UI Improvements
 
-**Input**: Design documents from `specs/002-elements-floating-panel/`
-**Feature Branch**: `002-elements-floating-panel`
-**Prerequisites**: plan.md ✓, spec.md ✓, research.md ✓, data-model.md ✓, contracts/elements-api.md ✓
+**Feature**: `002-elements-floating-panel`
+**Date**: 2026-04-30 (updated with new phases P008–P018)
+**Plan**: [plan.md](plan.md) | **Spec**: [spec.md](spec.md)
+**Completed**: P001–P008 (original feature + Tweakpane panel migration) | **Remaining**: P009–P018
 
 **TDD Policy**: TDD operates at the **task level**, not the feature layer. Each `F###` group is one logical concern. Within that group: `T001` writes the test (🔴 RED — must fail), `T002` implements it (🟢 GREEN — makes it pass), `T003` refactors (🔵 BLUE — optional). Complete one full RED→GREEN→BLUE cycle before opening the next `F###`. This prevents over-building.
 
@@ -224,7 +225,7 @@ All criteria MUST pass before this story is committed:
 
 ### P007F001 — `main.ts` integration wiring
 
-- [ ] P007F001T001 Update `src/main.ts`: capture the return value of `createControlPane(controlsContainer, layoutState)` into `const controlPane`; add `const elementFolder = controlPane.addFolder('Element')` to get the `FolderApi` for element attribute bindings; add `const viewportContainer = canvas.parentElement` with an `instanceof HTMLElement` guard (throw if not); call `createElementPanel(viewportContainer, sceneManager, elementFolder)` imported as a named export from `'./elements/index.js'`; run `pnpm typecheck` and `pnpm lint` to verify zero errors; smoke-test in browser via `pnpm dev` to confirm `#elements-panel` appears on the left edge of the 3D viewport, "+" button creates primitives visible in the scene, and selecting an element opens controls in the Tweakpane pane
+- [x] P007F001T001 Update `src/main.ts`: capture the return value of `createControlPane(controlsContainer, layoutState)` into `const controlPane`; add `const elementFolder = controlPane.addFolder('Element')` to get the `FolderApi` for element attribute bindings; add `const viewportContainer = canvas.parentElement` with an `instanceof HTMLElement` guard (throw if not); call `createElementPanel(viewportContainer, sceneManager, elementFolder)` imported as a named export from `'./elements/index.js'`; run `pnpm typecheck` and `pnpm lint` to verify zero errors; smoke-test in browser via `pnpm dev` to confirm `#elements-panel` appears on the left edge of the 3D viewport, "+" button creates primitives visible in the scene, and selecting an element opens controls in the Tweakpane pane
 
 ### Exit Criteria: Phase 7 (Integration)
 
@@ -240,76 +241,397 @@ All criteria MUST pass before this story is committed:
 
 ---
 
+## Phase 8 (P008): Panel Tweakpane Migration + Basic Remove — COMPLETE ✅
+
+**Goal**: Replace `<ul>/<li>` element list with Tweakpane `Pane`/`FolderApi` buttons.
+Add a panel-level Remove button (`#elements-remove-btn`). Add `no-raw-html` ESLint rule.
+
+> All P008 tasks are complete in the current working tree (reflected in `git diff HEAD`).
+> The `+` button is currently positioned **above** the scene list — P009 relocates it.
+
+- [x] P008F001T001 Add `no-raw-html` ESLint rule source to `eslint-rules/no-raw-html.mjs`
+- [x] P008F001T002 Register `local/no-raw-html` in `eslint.config.mjs` with exception for `ElementPanel.ts` and test files; add Tweakpane reference docs note to `AGENTS.md`
+- [x] P008F002T001 Update `src/elements/ElementPanel.test.ts` and `src/elements/ElementPanel.selection.test.ts` to use `[data-element-id]` attribute selectors instead of `<li>` selectors (RED — old selectors fail against new Pane implementation)
+- [x] P008F002T002 Migrate `src/elements/ElementPanel.ts` from `<ul>/<li>` to Tweakpane `Pane` wrapper + `FolderApi` buttons; each button stores `data-element-id` attribute; `buildElementItem` creates Tweakpane button per element
+- [x] P008F003T001 Write `src/elements/ElementPanel.remove.test.ts`: `#elements-remove-btn` exists in panel; clicking without selection does nothing; clicking after selection removes element from list and scene (RED — remove button not yet in P008F002T002 implementation)
+- [x] P008F003T002 Add panel-level Remove button (`#elements-remove-btn`) to `src/elements/ElementPanel.ts`; wire to `removeElement`, `renderer.sync`, `controls.clear`
+
+**Exit Criteria** (all pass): `pnpm test` → 121 tests; `pnpm lint` → zero warnings.
+
+---
+
+## Phase 9 (P009): Inline × Remove Button + + at Bottom (US-N1)
+
+**Goal**: Replace the panel-level Remove button with an inline × button on each element
+row — hidden (`hidden = true`) until the row is selected. Relocate the `+` button and
+picker to appear **below** the scene list (after `elementsFolder` in DOM order).
+
+**Story goal**: As a user, I can remove an element using a × button that appears inline
+on the selected row; the + button is at the bottom of the list, not the top.
+
+**Independent test criteria**: No `#elements-remove-btn` in the panel; each element
+row has a `[data-remove-for]` button; that button is `hidden` when the row is not
+selected, `hidden = false` when the row is selected; clicking it removes the element and
+clears controls; `+` button appears after all element rows in DOM order.
+
+- [ ] P009F001T001 Update `src/elements/ElementPanel.remove.test.ts`: remove `#elements-remove-btn` assertions; add — no `#elements-remove-btn` in panel; each element row contains `[data-remove-for]` button; that button `hidden === true` by default; after selecting a row its `[data-remove-for]` button has `hidden === false`; clicking `[data-remove-for]` on selected row removes element from store and scene (RED — implementation still has panel-level button)
+- [ ] P009F001T002 Update `src/elements/ElementPanel.ts`: move `elementsFolder` + `renderList(...)` call **before** `addBtn`/`pickerFolder` creation; remove panel-level `removeBtn` block; inside `buildElementItem` append a raw `<button data-remove-for="...">×</button>` with `hidden = true` after `btn.element`; on `onSelect` set the active row's `[data-remove-for]` button `hidden = false` and all others `hidden = true`; on remove callback call `removeElement`, `save`, `renderer.sync`, `controls.clear`, reset `selectedId = undefined`
+- [ ] P009F001T003 Add CSS in `src/style.css` for `[data-remove-for]` button styling (compact, right-aligned, visual appearance — no test needed)
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+ESLint: `ElementPanel.ts` ≤ 150 non-comment lines. If exceeded, extract `buildElementItem` into `src/elements/ElementPanelList.ts` and add that file to the `no-raw-html: 'off'` exception in `eslint.config.mjs`.
+
+---
+
+## Phase 10 (P010): Label Editing in Control Pane (US-N2)
+
+**Goal**: `ElementControls.bind()` prepends a **Name** text input (before all parametric
+attributes) bound to `element.label`. Editing it fires `onChange` with an updated element.
+
+**Story goal**: As a user, I can rename any element by editing the Name field in the
+control pane; the row label in the element list updates immediately.
+
+**Independent test criteria**: After `bind()`, the folder has `parametric + fixed + 1`
+children (Name is the first); changing the Name input fires `onChange` with `{ ...element, label: newValue }`.
+
+- [ ] P010F001T001 Add test to `src/elements/ElementControls.test.ts`: after `bind(createBox(), cb)` the folder has `5` children (1 Name + 3 parametric + 1 fixed); simulating a change on the first binding fires `onChange` with updated `label` (RED — `bind()` does not currently add a Name binding)
+- [ ] P010F001T002 In `src/elements/ElementControls.ts` add at the START of `bind()`: `const labelProxy = { label: element.label }; const labelBinding = folder.addBinding(labelProxy, 'label', { label: 'Name' }); labelBinding.on('change', ev => { current = { ...current, label: ev.value }; onChange(current); });` where `current` tracks the mutable element throughout all binding callbacks
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+---
+
+## Phase 11 (P011): Material Color Attribute + `createPlane` (US-N3 + US-N6)
+
+**Goal**: Add `material.color` (type `'color'`, default `"#888888"`) as a parametric
+attribute to every primitive factory. Add `createPlane()` for a flat plane element.
+
+**Story goal**: As a user, I can change an element's color in the control pane; I can
+also add a Plane primitive to the scene.
+
+**Independent test criteria**: `createBox()` has 4 parametric attributes (width, height,
+depth, color); `createSphere()` has 2; `createCylinder()` has 3; `createPlane()` returns
+a valid `SceneElement` with `geometry.type = 'plane'`, `geometry.width`, `geometry.height`,
+and `material.color`.
+
+- [ ] P011F001T001 Update inline doctests in `src/elements/PrimitiveFactory.ts` for `createBox`, `createSphere`, `createCylinder`: change `parametric_attributes.length` assertions to `4`, `2`, `3` respectively; add assertion that a `material.color` attribute with `attribute_value === '#888888'` exists (RED — attribute not yet added)
+- [ ] P011F001T002 Add `material.color` parametric attribute (type `'color'`, value `"#888888"`) to `createBox`, `createSphere`, `createCylinder` in `src/elements/PrimitiveFactory.ts`; attribute appears last in `parametric_attributes` array
+- [ ] P011F002T001 Write inline doctest for `createPlane()` in `src/elements/PrimitiveFactory.ts`: `el.fixed_attributes.find(a => a.attribute_uri_key === 'geometry.type')?.attribute_value === 'plane'`; `el.parametric_attributes.length === 3` (width, height, color); `el.origin_attributes.length === 3` (RED — function does not exist)
+- [ ] P011F002T002 Implement `createPlane(label?: string): SceneElement` in `src/elements/PrimitiveFactory.ts` (width `"2"`, height `"2"`, color `"#888888"`, type `"plane"`, position.x/y/z = 0); export from `src/elements/index.ts`
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass (updated doctests pass) |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+---
+
+## Phase 12 (P012): `SelectionHighlight` — BackSide Outline (US-N4)
+
+**Goal**: New pure module `createSelectionHighlight()` attaches a double-mesh BackSide
+outline child to a `THREE.Mesh` on selection and removes it on deselect.
+
+**Story goal**: As a user, I can visually identify the selected element via a blue-ish
+outline in the 3D viewport.
+
+**Independent test criteria**: `attach(mesh)` adds a child named `'__selection-outline__'`
+with `material.side === THREE.BackSide`; scale > 1; calling `attach` twice is idempotent;
+`detach(mesh)` removes the child; `detach` on a mesh without the child is a no-op;
+`clear(sceneManager, id)` removes the outline from the mesh at the given id.
+
+- [ ] P012F001T001 Write `src/elements/SelectionHighlight.test.ts`: create a real `SceneManager` with `MockSceneRenderer`; test all five cases above (RED — file and function do not exist)
+- [ ] P012F001T002 Implement `createSelectionHighlight()` in `src/elements/SelectionHighlight.ts`; `attach(mesh)`: guard against double-attach by checking `mesh.getObjectByName('__selection-outline__')`; clone geometry, create `new THREE.MeshStandardMaterial({ color: 0x00aaff, side: THREE.BackSide })`; set `scale.setScalar(1.015)`, `name = '__selection-outline__'`, add as child; `detach(mesh)`: find by name, `mesh.remove(child)`; `clear(sm, id)`: call `detach(sm.getObject(id) as THREE.Mesh)` if object found; export `SelectionHighlightApi` type and factory from `src/elements/index.ts`
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+---
+
+## Phase 13 (P013): `TransformGizmo` — Move / Rotate / Scale (US-N5)
+
+**Goal**: New module `createTransformGizmo(camera, domElement, orbitControls, _tcFactory?)`
+wraps `THREE.TransformControls`. The optional `_tcFactory` parameter (defaults to
+`(c, d) => new TransformControls(c, d)`) is a testability seam: tests inject a
+`FakeTransformControls` extending `THREE.EventDispatcher` to avoid WebGL coupling.
+
+**Story goal**: As a user, I can translate, rotate, or scale the selected element using
+a 3D gizmo; camera orbit is automatically disabled while dragging.
+
+**Independent test criteria**: `getHelper()` is a `THREE.Object3D`; `orbitControls.enabled`
+is `false` while fake dispatches `dragging-changed` with `value: true`, and `true` after;
+`onObjectChange(cb)` callback fires when fake dispatches `objectChange`; `onDragEnd(cb)`
+fires when `dragging-changed` fires with `value: false`; `dispose()` does not throw.
+
+- [ ] P013F001T001 Write `src/scene/TransformGizmo.test.ts`: define `FakeTransformControls` extending `THREE.EventDispatcher` with stub methods (`attach`, `detach`, `setMode`, `dispose`) and override `getHelper` to return `this` as `THREE.Object3D`; inject via `_tcFactory`; test all five criteria above (RED — file and function do not exist)
+- [ ] P013F001T002 Implement `createTransformGizmo` in `src/scene/TransformGizmo.ts`; on `dragging-changed` event: `orbitControls.enabled = !ev.value`; when `ev.value === false` also fire all `onDragEnd` callbacks; on `objectChange` fire all `onObjectChange` callbacks; `getHelper()` returns `tc` (TransformControls is an Object3D); export `TransformGizmoApi` and `TransformMode` types
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+---
+
+## Phase 14 (P014): `ElementRenderer` — Color + Plane + `setSelected` API
+
+**Goal**: `ElementRenderer` reads `material.color` from `parametric_attributes` and
+applies it to `MeshStandardMaterial`. Adds `'plane'` geometry case (`PlaneGeometry` +
+`DoubleSide`). Adds `setSelected(id | undefined)` to `ElementRendererApi` delegating
+to an internally owned `SelectionHighlight` instance.
+
+**Independent test criteria**: `sync` with a box having `material.color = '#ff0000'`
+→ mesh material color equals `#ff0000`; `sync` with a plane element → `THREE.Mesh`
+created; `setSelected(id)` adds `__selection-outline__` child; `setSelected(undefined)`
+removes it.
+
+- [ ] P014F001T001 Add tests to `src/elements/ElementRenderer.test.ts`: box with `material.color = '#ff0000'` — after `sync`, `(mesh.material as THREE.MeshStandardMaterial).color.getHexString() === 'ff0000'`; plane element (via `createPlane()`) — after `sync`, mesh is `instanceof THREE.Mesh` (RED — renderer does not read color or handle plane)
+- [ ] P014F001T002 Update `src/elements/ElementRenderer.ts`: add `'plane'` case in geometry builder using `new THREE.PlaneGeometry(w, h)`; for plane materials use `side: THREE.DoubleSide`; read `material.color` from `parametric_attributes` via `Array.find`; pass color string to `new THREE.MeshStandardMaterial({ color: colorValue })`
+- [ ] P014F002T001 Add tests to `src/elements/ElementRenderer.test.ts` for `setSelected(id)` and `setSelected(undefined)`: after sync with box, `renderer.setSelected(box.id)` → `sceneManager.getObject(box.id)` has a child named `'__selection-outline__'`; `renderer.setSelected(undefined)` → child removed (RED — `ElementRendererApi` has no `setSelected`)
+- [ ] P014F002T002 Add `setSelected(id: string | undefined): void` to `ElementRendererApi` interface in `src/elements/ElementTypes.ts` (or `ElementRenderer.ts`); implement using `createSelectionHighlight()` instance stored in closure; update `src/elements/index.ts` re-exports if needed
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+Note: Tweakpane color picker in jsdom may emit a non-fatal `<canvas>` warning — expected, not a failure.
+
+---
+
+## Phase 15 (P015): `Viewport` — Expose `getTransformGizmo()`
+
+**Goal**: `Viewport.ts` creates a `TransformGizmo`, adds its helper to the scene, and
+exposes `getTransformGizmo(): TransformGizmoApi` on `ViewportApi`.
+
+**Independent test criteria**: `viewport.getTransformGizmo()` returns an object with
+`attach`, `detach`, `setMode`, `getHelper`, `onObjectChange`, `onDragEnd`, `dispose`.
+
+- [ ] P015F001T001 Add test to `src/viewport/Viewport.test.ts`: `createViewport(...)` returns object with `getTransformGizmo()` method; calling it returns a non-null object that has all 7 `TransformGizmoApi` methods (RED — `ViewportApi` does not include `getTransformGizmo`)
+- [ ] P015F001T002 Update `src/viewport/Viewport.ts`: import `createTransformGizmo` from `'../scene/TransformGizmo.js'`; create `const gizmo = createTransformGizmo(camera, canvas, controls)` after `controls` is set up; call `sceneManager.addObject('__transform-gizmo__', gizmo.getHelper())`; add `getTransformGizmo(): TransformGizmoApi` to `ViewportApi` interface and return object
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+---
+
+## Phase 16 (P016): `ElementPanel` — Gizmo Wiring + Plane Picker
+
+**Goal**: `createElementPanel` accepts an optional 4th param `transformGizmo?: TransformGizmoApi`.
+On select: call `renderer.setSelected(id)` and `transformGizmo?.attach(mesh)`.
+On remove: call `renderer.setSelected(undefined)` and `transformGizmo?.detach()`.
+Register `onObjectChange` → update `origin_attributes` in store + `save` (no `renderer.sync` during drag).
+Register `onDragEnd` → call `renderer.sync(state)`. Add `'Plane'` to the picker.
+
+**Independent test criteria**: Selecting an element calls `renderer.setSelected(id)`;
+removing calls `renderer.setSelected(undefined)`; a `TransformGizmoApi` stub's `attach`
+is called on select and `detach` on remove; `onObjectChange` updates origin_attributes
+in the store without re-building the mesh; `onDragEnd` triggers `renderer.sync`; the
+picker contains a `'Plane'` button that creates a plane element.
+
+- [ ] P016F001T001 Write `src/elements/ElementPanel.gizmo.test.ts`: create a `TransformGizmoApi` stub (plain object implementing the interface — records calls); pass as 4th arg to `createElementPanel`; assert `stub.attach` called on row select; `stub.detach` called on remove; `onObjectChange` callback given to stub fires a position update stored in `load().elements[0].origin_attributes`; `onDragEnd` callback triggers a `renderer.sync` call (RED — 4th param not yet accepted)
+- [ ] P016F001T002 Update `src/elements/ElementPanel.ts`: add optional `transformGizmo?: TransformGizmoApi` as 4th param; in `onSelect`: call `renderer.setSelected(selectedId)` and `transformGizmo?.attach(sceneManager.getObject(selectedId))`; in remove callback: call `renderer.setSelected(undefined)` and `transformGizmo?.detach()`; on mount register `transformGizmo?.onObjectChange((obj) => { /* update origin_attributes from obj.position, save(state), no sync */ })` and `transformGizmo?.onDragEnd(() => renderer.sync(state))`
+- [ ] P016F002T001 Add test to `src/elements/ElementPanel.test.ts`: picker buttons include `'Plane'`; clicking Plane creates a plane element in the scene (RED — 'Plane' not in picker)
+- [ ] P016F002T002 Add `'Plane'` button to the picker types array in `src/elements/ElementPanel.ts`; import `createPlane` from `'./PrimitiveFactory.js'`; map `'Plane'` → `createPlane()`
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+ESLint: `ElementPanel.ts` ≤ 150 non-comment lines.
+
+---
+
+## Phase 17 (P017): `SystemSettings` + `SystemPanel` — Dark / Light Theme (US-N7)
+
+**Goal**: Pure `SystemSettings` module (localStorage + `matchMedia` seam). Tweakpane
+`SystemPanel` fixed to the bottom-left corner — Theme dropdown and Follow-system checkbox.
+
+**Story goal**: As a user, I can switch the app between dark and light themes; the setting
+persists across reloads; enabling "Follow system" automatically matches OS preference.
+
+**Independent test criteria**:
+- `loadSettings()` returns `{ theme: 'dark', followSystem: false }` as fallback
+- `saveSettings` + `loadSettings` round-trips data unchanged
+- `applyTheme` sets `document.documentElement.dataset['theme']` to the correct value
+- `detectSystemTheme(mq)` returns `'dark'` / `'light'` based on injected `mq` stub
+- `createSystemPanel(settings)` returns object with `dispose()`; changing Theme fires `onThemeChange`
+
+- [ ] P017F001T001 Write `src/system/SystemSettings.test.ts`: test `loadSettings()` with no localStorage key → fallback; `saveSettings` + `loadSettings` round-trip; `applyTheme({ theme: 'light', followSystem: false })` → `document.documentElement.dataset['theme'] === 'light'`; `detectSystemTheme((q) => ({ matches: true }))` → `'dark'`; `detectSystemTheme((q) => ({ matches: false }))` → `'light'` (RED — file does not exist)
+- [ ] P017F001T002 Implement `src/system/SystemSettings.ts`: `loadSettings(storage?: Storage)`, `saveSettings(data, storage?)`, `applyTheme(data)` (sets `document.documentElement.dataset['theme']`), `detectSystemTheme(mq?: (q: string) => { matches: boolean })` (defaults to `window.matchMedia`); export `ThemeValue` type and `SystemSettingsData` interface
+- [ ] P017F002T001 Write `src/system/SystemPanel.test.ts`: `createSystemPanel({ theme: 'dark', followSystem: false })` returns `{ dispose }`; `dispose()` does not throw; simulate binding change → `onThemeChange` callback called (RED — file does not exist)
+- [ ] P017F002T002 Implement `src/system/SystemPanel.ts`: create Tweakpane `Pane` with `style.position = 'fixed'; style.bottom = '1rem'; style.left = '1rem'`; bind `theme` (list: `{ Dark: 'dark', Light: 'light' }`) and `followSystem` (checkbox); on any change: `saveSettings(data)`, `applyTheme(data)`, optional `onThemeChange(data.theme)`; when `followSystem` toggled true: call `detectSystemTheme()` and register `matchMedia('prefers-color-scheme: dark').addEventListener('change', ...)` listener; when toggled false: remove listener; export `SystemPanelApi` type and `createSystemPanel` factory
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% |
+
+Both new files ≤ 150 non-comment lines.
+
+---
+
+## Phase 18 (P018): CSS Theme Variables + `main.ts` Final Integration
+
+**Goal**: Add CSS custom properties for dark (default) and light themes. Call
+`applyTheme(loadSettings())` as the **first statement** in `main()` to prevent flash.
+Pass `viewport.getTransformGizmo()` to `createElementPanel`. Mount `createSystemPanel`
+with a background-update callback.
+
+> `main.ts` is excluded from coverage; no TDD cycle — wiring and verification only.
+
+- [ ] P018F001T001 Add CSS custom properties to `src/style.css`: `:root` dark defaults (`--bg: #1a1a2e; --fg: #e8e8e8; --panel-bg: #16213e; --panel-border: #0f3460; --accent: #00aaff;`); `[data-theme="light"]` overrides (`--bg: #f4f4f4; --fg: #1a1a1a; --panel-bg: #ffffff; --panel-border: #cccccc; --accent: #0066cc;`); apply variables to `body`, `#elements-panel`, and any other affected selectors
+- [ ] P018F001T002 Update `src/main.ts`: `import { applyTheme, loadSettings } from './system/SystemSettings.js'`; make `applyTheme(loadSettings())` the **first statement** of `main()` (before DOM setup); `import { createSystemPanel } from './system/SystemPanel.js'`; call `createSystemPanel(settings, (theme) => sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e'))` after viewport setup
+- [ ] P018F002T001 Update `src/main.ts`: pass `viewport.getTransformGizmo()` as the 4th argument to `createElementPanel`; run `pnpm typecheck` + `pnpm lint` to confirm zero errors
+- [ ] P018F002T002 Smoke-test `pnpm dev`: dark theme loads by default; System panel is visible in bottom-left; switching to Light changes viewport background; adding Box/Sphere/Cylinder/Plane creates meshes in scene; selecting mesh shows gizmo + outline; inline × removes element; run `pnpm build` to confirm zero errors
+
+**Exit Criteria**:
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Build | `pnpm build` | Zero errors |
+| Coverage | `pnpm test:coverage` | ≥98% (`main.ts` excluded via `/* v8 ignore */`) |
+
+---
+
 ## Dependency Graph
 
-### User Story Completion Order
+### Phase Ordering
 
 ```
-P001 (Setup)
-  └─► P002 (ElementTypes)
-        └─► P003 (ElementStore + PrimitiveFactory)   ← US1 MVP
-              └─► P004 (ElementRenderer)              ← US2
-                    └─► P005 (ElementPanel DOM)       ← US3
-                          └─► P006 (ElementControls + Selection)  ← US4
-                                └─► P007 (Integration)
+P001 → P002 → P003 → P004 → P005 → P006 → P007   ← DONE (P001–P007)
+                                              │
+                                              └── P008                 ← DONE
+                                                    │
+                           ┌──────────────────────── P009 (inline ×)
+                           │    ┌────────────────── P010 (label edit)  [parallel with P009]
+                           │    │    ┌────────────── P011 (color+plane) [parallel]
+                           │    │    │    ┌────────── P012 (highlight)  [parallel]
+                           │    │    │    │    ┌───── P013 (gizmo)      [parallel]
+                           │    │    │    │    │
+                           │    │    └────┴──► P014 (renderer update — needs P011+P012)
+                           │    │             │
+                           │    │    ┌───────►│    P015 (viewport — needs P013)
+                           │    │    │         │         │
+                           └────┴────┴─────────┴─────────┴──► P016 (panel wiring — needs P009+P010+P014+P015)
+                                                                         │
+                           P017 (system settings — independent) ─────────┤
+                                                                         ▼
+                                                                       P018 (final integration)
 ```
 
-Each phase is a hard prerequisite for the next. No user story begins until P002 is complete.
+### User Story Completion Map
 
-### Cross-Phase Dependency Map
-
-| Artifact Produced | In Task | Consumed By | Risk if Missing |
-|---|---|---|---|
-| `position: relative` on `#viewport-container` in `src/style.css` | P001F002T001 | P005F001T002 (`#elements-panel` overlay positioning) | Panel renders outside viewport bounds |
-| `#elements-panel` CSS rule in `src/style.css` | P001F002T001 | P005F001T002 (panel styled correctly) | Panel invisible or unstyled |
-| `ElementTypes.ts` type declarations | P002F001T001 | All P003+ files | Compile errors in all downstream modules |
-| `load()` + `save()` with optional `storage` param | P003F001T002 | P003F002T001 (error-branch test), P005F001T002 (initial load) | Can't cover QuotaExceededError branch |
-| `addElement()`, `removeElement()`, `updateElement()`, `findElement()` | P003F002T002 | P005F002T002, P005F003T002, P006F002T002 | Panel add/update flow broken |
-| `createBox()`, `createSphere()`, `createCylinder()` | P003F003T002 | P005F003T002 (picker creates elements) | "+" button cannot create primitives |
-| `createElementRenderer()` | P004F001T002 | P005F001T002 (panel creates renderer internally) | Panel cannot sync Three.js scene |
-| `commit(newState)` private helper | P005F003T002 | P006F002T002 (onChange reuses same 4-step coordination) | 4-step sequence duplicated; `ElementPanel.ts` approaches 150-line limit |
-| `createElementControls()` | P006F001T002 | P006F002T002 (panel wires controls binding) | Selection does not bind to Tweakpane |
-| `createElementPanel()` full implementation | P006F002T002 | P007F001T001 (wired in main.ts) | Feature not accessible in running app |
-| `index.ts` complete re-exports | P006F003T001 | P007F001T001 (`main.ts` imports `createElementPanel` from domain index) | Integration import fails at compile time |
+| Phase | User Story | Produces | Blocks |
+|-------|-----------|----------|--------|
+| P009 | US-N1: Inline × remove + + at bottom | Updated `ElementPanel.ts` | P016 |
+| P010 | US-N2: Rename elements | Updated `ElementControls.ts` | P016 |
+| P011 | US-N3+N6: Color attribute + Plane | Updated `PrimitiveFactory.ts` | P014 |
+| P012 | US-N4: Selection highlight | `SelectionHighlight.ts` (new) | P014 |
+| P013 | US-N5: Transform gizmo | `TransformGizmo.ts` (new) | P015 |
+| P014 | Bridge: renderer update | Updated `ElementRenderer.ts` | P016 |
+| P015 | Bridge: viewport API | Updated `Viewport.ts` | P016 |
+| P016 | Integration: panel wiring | Updated `ElementPanel.ts` | P018 |
+| P017 | US-N7: Theme toggle | `SystemSettings.ts` + `SystemPanel.ts` (new) | P018 |
+| P018 | Final: CSS + `main.ts` | Updated `style.css` + `main.ts` | — |
 
 ### Parallel Execution Opportunities
 
-| Phase | Parallel Tasks | Condition |
-|---|---|---|
-| P001 | F001T001 ∥ F002T001 ∥ F003T001 | All touch different files; no shared deps |
-| P003 | F003T001 ∥ F001T001 | PrimitiveFactory and ElementStore are different files; both only require P002 |
-| P003 | F003T002 ∥ F002T002 | Same as above — different files, no shared dependency |
+**Batch A** (after P008, independent):
+- P009 (`ElementPanel.ts`) and P010 (`ElementControls.ts`) and P011 (`PrimitiveFactory.ts`) and P012 (`SelectionHighlight.ts` — new) and P013 (`TransformGizmo.ts` — new) and P017 (`SystemSettings.ts` / `SystemPanel.ts` — new)
+
+**Batch B** (after P011 + P012 complete):
+- P014 (`ElementRenderer.ts`) — depends on P011 + P012
+
+**Sequential constraint**: P015 waits for P013; P016 waits for P009 + P010 + P014 + P015; P018 waits for P016 + P017.
 
 ---
 
 ## Implementation Strategy
 
-**MVP Scope** (P001–P003): After P003, `ElementStore` and `PrimitiveFactory` are fully tested with 98%+ coverage. The remaining phases build on this stable foundation.
+**MVP (deliver immediately)**: P009 + P010 + P011
+- Pure improvements to existing files; zero new module dependencies
+- Fixes inline remove UX, adds label editing, adds color attribute + plane primitive
 
-**Incremental Delivery Order**:
-1. **P003 alone** — pure data layer; `pnpm test` passes cleanly with no DOM/WebGL requirements
-2. **P003 + P004** — elements can be driven programmatically into the Three.js scene
-3. **P003 + P004 + P005** — full panel UI; users add elements via "+" button
-4. **P003–P006** — complete feature with attribute editing in Tweakpane
-5. **P007** — plugged into the live application
+**Next batch**: P012 + P013
+- Two new isolated modules (SelectionHighlight, TransformGizmo)
+- Fully unit-testable without changing the panel
 
-**Suggested commit point**: After each Phase's Exit Criteria pass (one commit per phase, tagged by phase ID).
+**Integration batch**: P014 + P015 + P016
+- Wire highlight + gizmo into the renderer, viewport, and panel
+
+**Final batch**: P017 + P018
+- Theme system independent of elements; main.ts final wiring
 
 ---
 
-## Composability Pass — Gaps Found and Resolved
+## Composability Pass Results
 
-| Gap Type | Description | Resolution |
-|---|---|---|
-| CSS rule not wired | `#viewport-container` lacked `position: relative` — absolute-positioned panel overlay would fall outside viewport container | Added explicit instruction to P001F002T001 to modify the existing `#viewport-container` rule in `src/style.css` |
-| Method tested too late | `ElementPanel.ts` creates `ElementRenderer` internally — if ElementControls was also imported in P005, it would fail (unimplemented) | P005F001T002 explicitly states "do not import `ElementControls` yet"; controls import deferred to P006F002T002 |
-| Return value not captured | `main.ts` currently discards `createControlPane()` return value — `addFolder()` cannot be called | P007F001T001 explicitly updates `main.ts` to capture the return value |
-| Error branch untestable | `save()` `QuotaExceededError` branch unreachable without mocking `window.localStorage` (jsdom has no quota) | P003F001T001/T002 specify adding optional `storage: Storage = localStorage` parameter so tests inject a fake Storage that throws |
-| `noUncheckedIndexedAccess` trap | Fixed-attribute access pattern `arr[0].attribute_value` would return `T \| undefined` — likely runtime errors | P003F002T002 and P004F001T002 both specify using `Array.find()` and `for...of` instead of numeric index access |
+Gaps found and resolved before writing this task list:
 
-## DRY Pass — Repeated Patterns Consolidated
+| Gap | Resolution |
+|-----|-----------|
+| `ElementRendererApi` lacked `setSelected()` | P014F002 adds it; P016 runs after P014 |
+| `ViewportApi` lacked `getTransformGizmo()` | P015 adds it; P016 runs after P015 |
+| `createElementPanel` signature needed 4th param | P016F001 adds it as `optional` — existing tests unaffected |
+| `Plane` picker depends on `createPlane` | P016F002 runs after P011; correct ordering confirmed |
+| CSS `[data-theme="light"]` needs to precede `applyTheme` call | P018F001T001 adds CSS before P018F001T002 wires `applyTheme`; no flash because attribute is set before first paint |
+| `SceneManager.setBackground()` needed by `main.ts` | Already exists — no task needed |
+| `remove.test.ts` tests `#elements-remove-btn` which P009 removes | P009F001T001 explicitly updates those tests (RED → GREEN cycle in P009) |
+| `[P]` marker on P009F001T002 + P010F001T002 (same-phase concern) | Neither marked `[P]` — both have single-phase sequential concern within their own phase |
 
-| Pattern | Where It Appeared | Resolution |
-|---|---|---|
-| `index.ts` incremental re-exports | P003F004T001 and P004F002T001 opened the same file across phases for partial export lists | **Removed** both incremental tasks; P006F003T001 writes all 6 modules' re-exports in one pass. Safe because no test file imports from `index.ts` — tests import directly from their module file. `main.ts` (the only `index.ts` consumer) is wired in P007, after P006F003T001 completes. |
 | 4-step store-mutation coordination | Inline sequence (`newState = mutate(...)` → `save` → `renderer.sync` → `renderList`) described identically in P005F003T002 and P006F002T002 — same file, same 4 steps | **Introduced `commit(newState)` private closure helper** in P005F003T002; P006F002T002 calls `commit(updateElement(...))`. Eliminates ~10 duplicated lines in `ElementPanel.ts`, maintaining comfortable headroom under the 150-line limit across both phases. |

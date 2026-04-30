@@ -32,9 +32,9 @@ describe('createElementPanel — selection', () => {
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
     const folder = makeFolder();
     const panel = createElementPanel(document.createElement('div'), makeSm(), folder);
-    const li = panel.getElement().querySelector<HTMLLIElement>('li');
-    li?.click();
-    expect(li?.getAttribute('aria-selected')).toBe('true');
+    const el = panel.getElement().querySelector<HTMLElement>('[data-element-id]');
+    el?.click();
+    expect(el?.getAttribute('aria-selected')).toBe('true');
     expect(folder.children.length).toBeGreaterThan(0);
     localStorage.clear();
   });
@@ -45,11 +45,11 @@ describe('createElementPanel — selection', () => {
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl, sphereEl] }));
     const folder = makeFolder();
     const panel = createElementPanel(document.createElement('div'), makeSm(), folder);
-    const lis = panel.getElement().querySelectorAll<HTMLLIElement>('li');
-    lis[0]?.click();
-    lis[1]?.click();
-    expect(lis[0]?.getAttribute('aria-selected')).toBe('false');
-    expect(lis[1]?.getAttribute('aria-selected')).toBe('true');
+    const elements = panel.getElement().querySelectorAll<HTMLElement>('[data-element-id]');
+    elements[0]?.click();
+    elements[1]?.click();
+    expect(elements[0]?.getAttribute('aria-selected')).toBe('false');
+    expect(elements[1]?.getAttribute('aria-selected')).toBe('true');
     localStorage.clear();
   });
 
@@ -59,7 +59,7 @@ describe('createElementPanel — selection', () => {
     const sm = makeSm();
     const folder = makeFolder();
     const panel = createElementPanel(document.createElement('div'), sm, folder);
-    panel.getElement().querySelector<HTMLLIElement>('li')?.click();
+    panel.getElement().querySelector<HTMLElement>('[data-element-id]')?.click();
     const input = folder.element.querySelector<HTMLInputElement>('input');
     expect(input).toBeTruthy();
     if (input) {

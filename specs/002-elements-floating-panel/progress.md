@@ -150,3 +150,33 @@ Started: 2026-04-29 08:49:01
 - Dispatching `new Event('change', { bubbles: true })` on a Tweakpane text input fires the binding's onChange callback in jsdom
 - Use `getAttribute('data-id')` in the click listener (not a closed-over `el.id`) to allow tests to exercise defensive branches by modifying `data-id` before clicking
 - `aria-selected="false"` (not removal of attribute) is the correct ARIA pattern for deselected list rows
+
+---
+
+## Iteration 6 - 2026-04-29T10:20:00
+**User Story**: Phase 7 (P007) — Integration: Wire into main.ts
+**Tasks Completed**:
+- [x] P007F001T001: `src/main.ts` updated — captures `controlPane` return value, adds `elementFolder`, guards `viewportContainer`, calls `createElementPanel`
+**Tasks Remaining in Story**: None — story complete (already committed as 7a7e5cc)
+**Commit**: 7a7e5cc
+**Files Changed**:
+- src/main.ts
+**Learnings**:
+- All 7 phases (P001–P007) complete; 118 tests pass at 100% coverage
+- Feature fully integrated: `#elements-panel` mounts from `main.ts`, primitives added via "+", Three.js meshes sync, Tweakpane "Element" folder wired for attribute editing
+---
+
+---
+
+## Iteration 5 - 2026-04-29T10:19:00
+**User Story**: Phase 7 (P007) — Integration: Wire elements panel into main.ts
+**Tasks Completed**: 
+- [x] P007F001T001: Updated `src/main.ts` — capture `controlPane`, add `elementFolder`, guard `canvas.parentElement`, call `createElementPanel`
+**Tasks Remaining in Story**: None — story complete
+**Commit**: 7a7e5cc
+**Files Changed**: 
+- src/main.ts
+- specs/002-elements-floating-panel/tasks.md
+**Learnings**:
+- `main.ts` is excluded from coverage so no test cycle needed; wiring only
+- All 7 quality gates passed immediately (118 tests, 100% coverage)

@@ -1,7 +1,7 @@
 # Contract: Elements Domain API
 
 **Feature**: `002-elements-floating-panel`
-**Date**: 2026-04-29
+**Date**: 2026-04-29 (updated 2026-04-30)
 
 This document defines the public API contracts for all modules in the `src/elements/`
 domain. These interfaces are the stable boundaries between the elements domain and the
@@ -91,8 +91,9 @@ export function findElement(
 
 ## 3. `PrimitiveFactory` (exported from `src/elements/PrimitiveFactory.ts`)
 
-Creates pre-populated `SceneElement` values for the three supported primitive types.
-IDs are generated via `ulid()`. No external side effects.
+Creates pre-populated `SceneElement` values for the four supported primitive types.
+IDs are generated via `ulid()`. All primitives include a `material.color` attribute
+(`type: 'color'`, default `"#888888"`). No external side effects.
 
 ```ts
 // Create a SceneElement representing a box primitive (width=1, height=1, depth=1)
@@ -103,6 +104,9 @@ export function createSphere(label?: string): SceneElement;
 
 // Create a SceneElement representing a cylinder primitive (radius=0.5, height=2)
 export function createCylinder(label?: string): SceneElement;
+
+// Create a SceneElement representing a flat plane (width=2, height=2, DoubleSide)
+export function createPlane(label?: string): SceneElement;
 ```
 
 ---
@@ -114,13 +118,18 @@ maintains the Three.js scene to mirror the store. No knowledge of UI or controls
 
 ```ts
 // Create a renderer bound to the given SceneManager.
-// Returns an object with a single `sync` method.
 export function createElementRenderer(sceneManager: SceneManager): ElementRendererApi;
 
 export interface ElementRendererApi {
   // Synchronise the Three.js scene to match the provided element store data.
   // Removes meshes for elements no longer in data; adds/updates meshes for new/changed ones.
+  // Also reads material.color from parametric_attributes and applies it to the mesh material.
   sync(data: ElementStoreData): void;
+
+  // Set the currently selected element id.
+  // Attaches a BackSide outline child to the selected mesh; removes it from the previously
+  // selected mesh. Pass undefined to clear the selection outline.
+  setSelected(id: string | undefined): void;
 }
 ```
 
@@ -131,8 +140,11 @@ export interface ElementRendererApi {
 | `"box"`      | `BoxGeometry(w, h, d)`       | `geometry.width`, `geometry.height`, `geometry.depth` |
 | `"sphere"`   | `SphereGeometry(r, 32, 16)`  | `geometry.radius` |
 | `"cylinder"` | `CylinderGeometry(r, r, h)`  | `geometry.radius`, `geometry.height` |
+| `"plane"`    | `PlaneGeometry(w, h)`        | `geometry.width`, `geometry.height` |
 
 `origin_attributes` map to `Object3D.position` via `position.x / position.y / position.z`.
+`material.color` parametric attribute is read as a CSS hex string and applied to
+`MeshStandardMaterial.color`.
 
 ---
 
@@ -147,6 +159,7 @@ export function createElementControls(folder: FolderApi): ElementControlsApi;
 export interface ElementControlsApi {
   // Bind the given element's attributes into the folder.
   // Clears all existing folder children first.
+  // Adds a 'Name' text binding at the top for element.label.
   // onChange is called with the updated SceneElement whenever any binding changes.
   bind(element: SceneElement, onChange: (updated: SceneElement) => void): void;
 
@@ -155,14 +168,19 @@ export interface ElementControlsApi {
 }
 ```
 
+**Binding order**:
+1. `Name` — text input bound to `element.label` (calls onChange with updated label)
+2. Parametric attributes — in declaration order
+3. Fixed attributes — read-only monitors
+
 **Binding type map**:
 
 | `attribute_type` | Tweakpane options |
 |------------------|-------------------|
-| `'number'`       | `{ min: -Infinity, max: Infinity, step: 0.01 }` |
+| `'number'`       | `{ step: 0.01 }` |
 | `'string'`       | `{}` (default text input) |
 | `'boolean'`      | `{}` (checkbox) |
-| `'color'`        | `{ view: 'color' }` |
+| `'color'`        | auto-detected from CSS hex string |
 | `'select'`       | `{ options: parsed from attribute_value as JSON array }` |
 
 ---
@@ -170,7 +188,8 @@ export interface ElementControlsApi {
 ## 6. `ElementPanel` (exported from `src/elements/ElementPanel.ts`)
 
 Manages the floating panel DOM overlay. Coordinates reads/writes between
-`ElementStore`, `ElementRenderer`, `ElementControls`, and `PrimitiveFactory`.
+`ElementStore`, `ElementRenderer`, `ElementControls`, `PrimitiveFactory`, and the
+`TransformGizmoApi` from the Viewport.
 
 ```ts
 export interface ElementPanelApi {
@@ -184,16 +203,52 @@ export interface ElementPanelApi {
 // Mount the elements panel inside the given container element.
 // sceneManager: used to create the ElementRenderer
 // controlFolder: Tweakpane FolderApi for element attribute bindings
+// transformGizmo: optional; if provided, gizmo is attached/detached on selection change
 export function createElementPanel(
   container: HTMLElement,
   sceneManager: SceneManager,
   controlFolder: FolderApi,
+  transformGizmo?: TransformGizmoApi,
 ): ElementPanelApi;
+```
+
+**UI behaviour**:
+- The "+" button is positioned **below** all element rows in the scene list.
+- Each element row contains an inline "×" button that is only shown when
+  `aria-selected="true"` for that row. Clicking "×" removes the element, clears
+  the control pane, and calls `transformGizmo?.detach()`.
+- On element selection, calls `renderer.setSelected(id)` and `transformGizmo?.attach(mesh)`.
+- On `transformGizmo?.onObjectChange`: updates `origin_attributes` in store and saves;
+  does **not** call `renderer.sync()` during active drag.
+- On drag-end (`mouseUp`): calls `renderer.sync(state)` to reconcile the scene.
+
+---
+
+## 7. `SelectionHighlight` (exported from `src/elements/SelectionHighlight.ts`)
+
+Manages the double-mesh BackSide outline for the selected 3D object.
+
+```ts
+export function createSelectionHighlight(): SelectionHighlightApi;
+
+export interface SelectionHighlightApi {
+  // Add a BackSide outline clone as a named child of mesh.
+  // Safe to call multiple times on the same mesh (idempotent).
+  attach(mesh: THREE.Mesh): void;
+
+  // Remove the outline child from mesh.
+  // No-op if the mesh has no outline child.
+  detach(mesh: THREE.Mesh): void;
+
+  // Remove the outline from the mesh identified by id via SceneManager.
+  // No-op if no mesh found or mesh has no outline.
+  clear(sceneManager: SceneManager, id: string): void;
+}
 ```
 
 ---
 
-## 7. Public Re-exports (`src/elements/index.ts`)
+## 8. Public Re-exports (`src/elements/index.ts`)
 
 ```ts
 export type {
@@ -205,12 +260,14 @@ export type {
   ElementStoreData,
   ElementRendererApi,
   ElementControlsApi,
+  SelectionHighlightApi,
   ElementPanelApi,
 } from './ElementTypes.js';
 
 export { load, save, addElement, removeElement, updateElement, findElement } from './ElementStore.js';
-export { createBox, createSphere, createCylinder } from './PrimitiveFactory.js';
+export { createBox, createSphere, createCylinder, createPlane } from './PrimitiveFactory.js';
 export { createElementRenderer } from './ElementRenderer.js';
+export { createSelectionHighlight } from './SelectionHighlight.js';
 export { createElementControls } from './ElementControls.js';
 export { createElementPanel } from './ElementPanel.js';
 ```
@@ -219,13 +276,19 @@ export { createElementPanel } from './ElementPanel.js';
 
 ## Integration with `main.ts`
 
-The coordinator wires everything together. The key change to `main.ts`:
+The coordinator wires everything together:
 
 ```ts
 // After existing viewport + controlPane setup:
 const elementFolder = controlPane.addFolder('Element');
-createElementPanel(viewportContainer, sceneManager, elementFolder);
+const transformGizmo = viewport.getTransformGizmo();
+createElementPanel(viewportContainer, sceneManager, elementFolder, transformGizmo);
+
+// System settings (early, before first render, to avoid theme flash):
+const settings = loadSettings();
+applyTheme(settings);
+createSystemPanel(settings);
 ```
 
 The panel self-manages its lifecycle: it loads from localStorage on mount, syncs the
-renderer, and hooks the "+" button to the primitive picker.
+renderer, and hooks the "+" button (at the bottom) to the primitive picker.

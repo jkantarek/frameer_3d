@@ -2,9 +2,10 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 import jsdocExamplesOnly from './eslint-rules/jsdoc-examples-only.mjs';
+import noRawHtml from './eslint-rules/no-raw-html.mjs';
 
 const localPlugin = {
-  rules: { 'jsdoc-examples-only': jsdocExamplesOnly },
+  rules: { 'jsdoc-examples-only': jsdocExamplesOnly, 'no-raw-html': noRawHtml },
 };
 
 export default tseslint.config(
@@ -104,7 +105,17 @@ export default tseslint.config(
 
       // All JSDoc must be executable @example doctests — no prose, no @param/@returns
       'local/jsdoc-examples-only': 'error',
+
+      // No raw DOM manipulation — use Tweakpane for all UI
+      'local/no-raw-html': 'error',
     },
+  },
+
+  // Allow raw DOM in test files (fixture setup) and in the ElementPanel mount-point div
+  {
+    files: ['src/**/*.{test,spec}.{ts,tsx}', 'src/elements/ElementPanel.ts'],
+    plugins: { local: localPlugin },
+    rules: { 'local/no-raw-html': 'off' },
   },
 
   // Disable formatting rules that conflict with Prettier
