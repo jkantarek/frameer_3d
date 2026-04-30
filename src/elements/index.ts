@@ -14,7 +14,7 @@ export {
   updateElement,
   findElement,
 } from './ElementStore.js';
-export { createBox, createSphere, createCylinder } from './PrimitiveFactory.js';
+export { createBox, createSphere, createCylinder, createPlane } from './PrimitiveFactory.js';
 export { createElementRenderer } from './ElementRenderer.js';
 export type { ElementRendererApi } from './ElementRenderer.js';
 export { createElementControls } from './ElementControls.js';

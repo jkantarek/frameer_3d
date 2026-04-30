@@ -51,7 +51,7 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(0);
   });
 
-  it('bind twice keeps only 5 children', () => {
+  it('bind twice keeps only 6 children', () => {
     const folder = makeFolder();
     const controls = createElementControls(folder);
     controls.bind(createBox(), () => {
@@ -60,7 +60,7 @@ describe('createElementControls', () => {
     controls.bind(createBox(), () => {
       return;
     });
-    expect(folder.children.length).toBe(5);
+    expect(folder.children.length).toBe(6);
   });
 
   it('onChange called with updated element when number input changes', () => {
@@ -107,12 +107,12 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(2); // 1 Name + 1 color
   });
 
-  it('bind(box) adds 5 children to folder (1 Name + 3 parametric + 1 fixed)', () => {
+  it('bind(box) adds 6 children to folder (1 Name + 4 parametric + 1 fixed)', () => {
     const folder = makeFolder();
     createElementControls(folder).bind(createBox(), () => {
       return;
     });
-    expect(folder.children.length).toBe(5);
+    expect(folder.children.length).toBe(6);
   });
 
   it('onChange called with updated label when Name input changes', () => {
