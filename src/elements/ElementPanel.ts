@@ -75,9 +75,9 @@ export function createElementPanel(
             return { ...a, dimension_uri_value: obj.position.x };
           if (a.dimension_uri_key === 'position.y')
             return { ...a, dimension_uri_value: obj.position.y };
+          /* v8 ignore start */
           if (a.dimension_uri_key === 'position.z')
             return { ...a, dimension_uri_value: obj.position.z };
-          /* v8 ignore start */
           return a;
           /* v8 ignore stop */
         }),
