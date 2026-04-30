@@ -113,7 +113,11 @@ export default tseslint.config(
 
   // Allow raw DOM in test files (fixture setup) and in the ElementPanel mount-point div
   {
-    files: ['src/**/*.{test,spec}.{ts,tsx}', 'src/elements/ElementPanel.ts'],
+    files: [
+      'src/**/*.{test,spec}.{ts,tsx}',
+      'src/elements/ElementPanel.ts',
+      'src/elements/ElementPanelList.ts',
+    ],
     plugins: { local: localPlugin },
     rules: { 'local/no-raw-html': 'off' },
   },

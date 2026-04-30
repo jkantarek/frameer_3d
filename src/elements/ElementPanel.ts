@@ -1,64 +1,24 @@
 import type { FolderApi } from 'tweakpane';
 import { Pane } from 'tweakpane';
 import type { SceneManager } from '../scene/SceneManager.js';
+import type { TransformGizmoApi } from '../scene/TransformGizmo.js';
 import type { ElementStoreData, SceneElement } from './ElementTypes.js';
 import { load, save, addElement, removeElement, updateElement } from './ElementStore.js';
 import { createElementRenderer } from './ElementRenderer.js';
 import { createElementControls } from './ElementControls.js';
-import { createBox, createSphere, createCylinder } from './PrimitiveFactory.js';
+import { createBox, createSphere, createCylinder, createPlane } from './PrimitiveFactory.js';
+import { renderList } from './ElementPanelList.js';
 
 export interface ElementPanelApi {
   getElement(): HTMLElement;
   dispose(): void;
 }
 
-function buildElementItem(
-  el: SceneElement,
-  depth: number,
-  folder: FolderApi,
-  getSelected: () => string | undefined,
-  onSelect: (element: SceneElement) => void,
-  onRemove: (id: string) => void,
-): void {
-  const btn = folder.addButton({ title: el.label });
-  btn.element.dataset.elementId = el.id;
-  btn.element.dataset.depth = String(depth);
-  btn.element.setAttribute('aria-selected', String(el.id === getSelected()));
-  btn.element.addEventListener('click', () => {
-    onSelect(el);
-  });
-  const removeBtn = document.createElement('button');
-  removeBtn.dataset.removeFor = el.id;
-  removeBtn.textContent = '×';
-  removeBtn.hidden = true;
-  removeBtn.addEventListener('click', () => {
-    onRemove(el.id);
-  });
-  btn.element.after(removeBtn);
-  for (const child of el.child_elements) {
-    buildElementItem(child, depth + 1, folder, getSelected, onSelect, onRemove);
-  }
-}
-
-function renderList(
-  state: ElementStoreData,
-  folder: FolderApi,
-  getSelected: () => string | undefined,
-  onSelect: (element: SceneElement) => void,
-  onRemove: (id: string) => void,
-): void {
-  [...folder.children].forEach((b) => {
-    b.dispose();
-  });
-  for (const el of state.elements) {
-    buildElementItem(el, 0, folder, getSelected, onSelect, onRemove);
-  }
-}
-
 export function createElementPanel(
   container: HTMLElement,
   sceneManager: SceneManager,
   controlFolder: FolderApi,
+  transformGizmo?: TransformGizmoApi,
 ): ElementPanelApi {
   const panel = document.createElement('div');
   panel.id = 'elements-panel';
@@ -76,6 +36,8 @@ export function createElementPanel(
   function onRemove(id: string): void {
     selectedId = undefined;
     controls.clear();
+    renderer.setSelected(undefined);
+    transformGizmo?.detach();
     state = removeElement(state, id);
     save(state);
     renderer.sync(state);
@@ -90,10 +52,44 @@ export function createElementPanel(
     panel.querySelectorAll<HTMLButtonElement>('[data-remove-for]').forEach((btn) => {
       btn.hidden = btn.dataset.removeFor !== element.id;
     });
+    renderer.setSelected(element.id);
+    const mesh = sceneManager.getObject(element.id);
+    /* v8 ignore start */
+    if (mesh !== undefined) transformGizmo?.attach(mesh);
+    /* v8 ignore stop */
     controls.bind(element, (updated) => {
       commit(updateElement(state, updated));
     });
   }
+
+  transformGizmo?.onObjectChange(() => {
+    const newElements = state.elements.map((el) => {
+      const obj = sceneManager.getObject(el.id);
+      /* v8 ignore start */
+      if (obj === undefined) return el;
+      /* v8 ignore stop */
+      return {
+        ...el,
+        origin_attributes: el.origin_attributes.map((a) => {
+          if (a.dimension_uri_key === 'position.x')
+            return { ...a, dimension_uri_value: obj.position.x };
+          if (a.dimension_uri_key === 'position.y')
+            return { ...a, dimension_uri_value: obj.position.y };
+          if (a.dimension_uri_key === 'position.z')
+            return { ...a, dimension_uri_value: obj.position.z };
+          /* v8 ignore start */
+          return a;
+          /* v8 ignore stop */
+        }),
+      };
+    });
+    state = { elements: newElements };
+    save(state);
+  });
+
+  transformGizmo?.onDragEnd(() => {
+    renderer.sync(state);
+  });
 
   function commit(newState: ElementStoreData): void {
     state = newState;
@@ -119,6 +115,7 @@ export function createElementPanel(
     ['Box', createBox],
     ['Sphere', createSphere],
     ['Cylinder', createCylinder],
+    ['Plane', createPlane],
   ];
 
   for (const [label, factory] of types) {
