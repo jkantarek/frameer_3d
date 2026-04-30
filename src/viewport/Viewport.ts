@@ -2,10 +2,13 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type { SceneRenderer } from '../scene/SceneRenderer.js';
 import { SceneManager } from '../scene/SceneManager.js';
+import { createTransformGizmo } from '../scene/TransformGizmo.js';
+import type { TransformGizmoApi } from '../scene/TransformGizmo.js';
 
 export interface ViewportApi {
   getCamera(): THREE.PerspectiveCamera;
   getSceneManager(): SceneManager;
+  getTransformGizmo(): TransformGizmoApi;
   dispose(): void;
 }
 
@@ -32,6 +35,8 @@ export function createViewport(
   camera.lookAt(0, 0, 0);
   const sceneManager = new SceneManager(renderer, camera);
   const controls = new OrbitControls(camera, canvas);
+  const gizmo = createTransformGizmo(camera, canvas, controls);
+  sceneManager.addObject('__transform-gizmo__', gizmo.getHelper());
 
   canvas.role = 'img';
   canvas.setAttribute('aria-label', '3D viewport');
@@ -75,6 +80,9 @@ export function createViewport(
     },
     getSceneManager(): SceneManager {
       return sceneManager;
+    },
+    getTransformGizmo(): TransformGizmoApi {
+      return gizmo;
     },
     dispose,
   };
