@@ -1,9 +1,12 @@
 import * as THREE from 'three';
 import type { SceneManager } from '../scene/SceneManager.js';
 import type { ElementStoreData, SceneElement } from './ElementTypes.js';
+import { createSelectionHighlight } from './SelectionHighlight.js';
+import type { SelectionHighlightApi } from './SelectionHighlight.js';
 
 export interface ElementRendererApi {
   sync(data: ElementStoreData): void;
+  setSelected(id: string | undefined): void;
 }
 
 function collectIds(elements: readonly SceneElement[]): Set<string> {
@@ -38,6 +41,12 @@ function buildGeometry(element: SceneElement): THREE.BufferGeometry {
     const r = getParam(element, 'geometry.radius');
     return new THREE.CylinderGeometry(r, r, getParam(element, 'geometry.height'), 32);
   }
+  if (type === 'plane') {
+    return new THREE.PlaneGeometry(
+      getParam(element, 'geometry.width'),
+      getParam(element, 'geometry.height'),
+    );
+  }
   return new THREE.BoxGeometry(
     getParam(element, 'geometry.width'),
     getParam(element, 'geometry.height'),
@@ -45,8 +54,18 @@ function buildGeometry(element: SceneElement): THREE.BufferGeometry {
   );
 }
 
+function getColor(element: SceneElement): string | undefined {
+  return element.parametric_attributes.find((a) => a.attribute_uri_key === 'material.color')
+    ?.attribute_value;
+}
+
 function syncElement(element: SceneElement, sceneManager: SceneManager): void {
-  const mesh = new THREE.Mesh(buildGeometry(element), new THREE.MeshStandardMaterial());
+  const typeAttr = element.fixed_attributes.find((a) => a.attribute_uri_key === 'geometry.type');
+  const isPlane = typeAttr?.attribute_value === 'plane';
+  const color = getColor(element);
+  const matOptions: THREE.MeshStandardMaterialParameters = color !== undefined ? { color } : {};
+  if (isPlane) matOptions.side = THREE.DoubleSide;
+  const mesh = new THREE.Mesh(buildGeometry(element), new THREE.MeshStandardMaterial(matOptions));
   mesh.position.set(
     getOrigin(element, 'position.x'),
     getOrigin(element, 'position.y'),
@@ -60,6 +79,9 @@ function syncElement(element: SceneElement, sceneManager: SceneManager): void {
 
 export function createElementRenderer(sceneManager: SceneManager): ElementRendererApi {
   const renderedIds = new Set<string>();
+  const highlight: SelectionHighlightApi = createSelectionHighlight();
+  let currentSelectedId: string | undefined;
+
   return {
     sync(data: ElementStoreData): void {
       const newIds = collectIds(data.elements);
@@ -74,6 +96,16 @@ export function createElementRenderer(sceneManager: SceneManager): ElementRender
       renderedIds.clear();
       for (const id of newIds) {
         renderedIds.add(id);
+      }
+    },
+    setSelected(id: string | undefined): void {
+      if (currentSelectedId !== undefined) {
+        highlight.clear(sceneManager, currentSelectedId);
+      }
+      currentSelectedId = id;
+      if (id !== undefined) {
+        const mesh = sceneManager.getObject(id);
+        if (mesh instanceof THREE.Mesh) highlight.attach(mesh as THREE.Mesh);
       }
     },
   };
