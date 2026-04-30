@@ -18,6 +18,7 @@ function buildElementItem(
   folder: FolderApi,
   getSelected: () => string | undefined,
   onSelect: (element: SceneElement) => void,
+  onRemove: (id: string) => void,
 ): void {
   const btn = folder.addButton({ title: el.label });
   btn.element.dataset.elementId = el.id;
@@ -26,8 +27,16 @@ function buildElementItem(
   btn.element.addEventListener('click', () => {
     onSelect(el);
   });
+  const removeBtn = document.createElement('button');
+  removeBtn.dataset.removeFor = el.id;
+  removeBtn.textContent = '×';
+  removeBtn.hidden = true;
+  removeBtn.addEventListener('click', () => {
+    onRemove(el.id);
+  });
+  btn.element.after(removeBtn);
   for (const child of el.child_elements) {
-    buildElementItem(child, depth + 1, folder, getSelected, onSelect);
+    buildElementItem(child, depth + 1, folder, getSelected, onSelect, onRemove);
   }
 }
 
@@ -36,12 +45,13 @@ function renderList(
   folder: FolderApi,
   getSelected: () => string | undefined,
   onSelect: (element: SceneElement) => void,
+  onRemove: (id: string) => void,
 ): void {
   [...folder.children].forEach((b) => {
     b.dispose();
   });
   for (const el of state.elements) {
-    buildElementItem(el, 0, folder, getSelected, onSelect);
+    buildElementItem(el, 0, folder, getSelected, onSelect, onRemove);
   }
 }
 
@@ -60,6 +70,39 @@ export function createElementPanel(
   let state = load();
   let selectedId: string | undefined;
   renderer.sync(state);
+
+  const elementsFolder = listPane.addFolder({ title: 'Scene', expanded: true });
+
+  function onRemove(id: string): void {
+    selectedId = undefined;
+    controls.clear();
+    state = removeElement(state, id);
+    save(state);
+    renderer.sync(state);
+    renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
+  }
+
+  function onSelect(element: SceneElement): void {
+    selectedId = element.id;
+    panel.querySelectorAll<HTMLElement>('[data-element-id]').forEach((el) => {
+      el.setAttribute('aria-selected', String(el.dataset.elementId === element.id));
+    });
+    panel.querySelectorAll<HTMLButtonElement>('[data-remove-for]').forEach((btn) => {
+      btn.hidden = btn.dataset.removeFor !== element.id;
+    });
+    controls.bind(element, (updated) => {
+      commit(updateElement(state, updated));
+    });
+  }
+
+  function commit(newState: ElementStoreData): void {
+    state = newState;
+    save(state);
+    renderer.sync(state);
+    renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
+  }
+
+  renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
 
   const addBtn = listPane.addButton({ title: '+' });
   addBtn.element.id = 'elements-add-btn';
@@ -84,38 +127,6 @@ export function createElementPanel(
       pickerFolder.element.hidden = true;
     });
   }
-
-  const elementsFolder = listPane.addFolder({ title: 'Scene', expanded: true });
-
-  function onSelect(element: SceneElement): void {
-    selectedId = element.id;
-    panel.querySelectorAll<HTMLElement>('[data-element-id]').forEach((el) => {
-      el.setAttribute('aria-selected', String(el.dataset.elementId === element.id));
-    });
-    controls.bind(element, (updated) => {
-      commit(updateElement(state, updated));
-    });
-  }
-
-  function commit(newState: ElementStoreData): void {
-    state = newState;
-    save(state);
-    renderer.sync(state);
-    renderList(state, elementsFolder, () => selectedId, onSelect);
-  }
-
-  renderList(state, elementsFolder, () => selectedId, onSelect);
-
-  const removeBtn = listPane.addButton({ title: 'Remove' });
-  removeBtn.element.id = 'elements-remove-btn';
-  removeBtn.element.addEventListener('click', () => {
-    if (selectedId !== undefined) {
-      const id = selectedId;
-      selectedId = undefined;
-      controls.clear();
-      commit(removeElement(state, id));
-    }
-  });
 
   return {
     getElement(): HTMLElement {

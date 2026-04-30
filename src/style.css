@@ -41,3 +41,21 @@ canvas {
 #drag-handle {
   display: none;
 }
+
+[data-remove-for] {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #e05;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+[data-remove-for]:hover {
+  color: #ff2244;
+}

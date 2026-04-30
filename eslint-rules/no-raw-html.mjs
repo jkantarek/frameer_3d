@@ -25,12 +25,12 @@ export default {
     docs: {
       description:
         'Disallow raw DOM manipulation (createElement, innerHTML, appendChild, etc.) ' +
-        'in production source. Use Tweakpane for all UI. ' + DOCS_HINT,
+        'in production source. Use Tweakpane for all UI. ' +
+        DOCS_HINT,
     },
     schema: [],
     messages: {
-      noRawHtml:
-        'Raw DOM "{{name}}" is not allowed in production source. ' + DOCS_HINT,
+      noRawHtml: 'Raw DOM "{{name}}" is not allowed in production source. ' + DOCS_HINT,
     },
   },
 

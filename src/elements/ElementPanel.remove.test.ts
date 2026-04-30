@@ -56,28 +56,53 @@ describe('createElementPanel — creation and removal', () => {
     expect(sm.getObject(clickPicker(sm, 'Cylinder'))).toBeInstanceOf(THREE.Mesh);
   });
 
-  it('elements-remove-btn exists inside elements-panel', () => {
+  it('no #elements-remove-btn in panel', () => {
     localStorage.clear();
     const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
-    expect(panel.getElement().querySelector('#elements-remove-btn')).toBeTruthy();
+    expect(panel.getElement().querySelector('#elements-remove-btn')).toBeNull();
   });
 
-  it('clicking remove without selection does nothing', () => {
+  it('each element row contains [data-remove-for] button', () => {
     const boxEl = createBox();
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
     const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
-    panel.getElement().querySelector<HTMLElement>('#elements-remove-btn')?.click();
-    expect(panel.getElement().querySelectorAll('[data-element-id]').length).toBe(1);
+    const removeBtn = panel
+      .getElement()
+      .querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`);
+    expect(removeBtn).toBeTruthy();
     localStorage.clear();
   });
 
-  it('clicking remove after selection removes element from list and scene', () => {
+  it('[data-remove-for] button is hidden by default', () => {
+    const boxEl = createBox();
+    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    const removeBtn = panel
+      .getElement()
+      .querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`);
+    expect(removeBtn?.hidden).toBe(true);
+    localStorage.clear();
+  });
+
+  it('[data-remove-for] button is visible after row is selected', () => {
+    const boxEl = createBox();
+    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    findElementItem(panel, boxEl.id)?.click();
+    const removeBtn = panel
+      .getElement()
+      .querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`);
+    expect(removeBtn?.hidden).toBe(false);
+    localStorage.clear();
+  });
+
+  it('clicking [data-remove-for] removes element from list and scene', () => {
     const boxEl = createBox();
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
     const sm = makeSm();
     const panel = createElementPanel(document.createElement('div'), sm, makeFolder());
     findElementItem(panel, boxEl.id)?.click();
-    panel.getElement().querySelector<HTMLElement>('#elements-remove-btn')?.click();
+    panel.getElement().querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`)?.click();
     expect(panel.getElement().querySelectorAll('[data-element-id]').length).toBe(0);
     expect(sm.getObject(boxEl.id)).toBeUndefined();
     localStorage.clear();
