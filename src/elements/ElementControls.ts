@@ -30,6 +30,11 @@ export function createElementControls(folder: FolderApi): ElementControlsApi {
   function bind(element: SceneElement, onChange: (updated: SceneElement) => void): void {
     clear();
     let current = element;
+    const labelProxy = { label: element.label };
+    folder.addBinding(labelProxy, 'label', { label: 'Name' }).on('change', (ev) => {
+      current = { ...current, label: ev.value };
+      onChange(current);
+    });
     for (const attr of element.parametric_attributes) {
       const proxy: Record<string, CoercedValue> = {
         [attr.attribute_uri_key]: coerce(attr.attribute_value, attr.attribute_type),

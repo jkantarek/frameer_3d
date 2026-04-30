@@ -60,11 +60,13 @@ describe('createElementPanel — selection', () => {
     const folder = makeFolder();
     const panel = createElementPanel(document.createElement('div'), sm, folder);
     panel.getElement().querySelector<HTMLElement>('[data-element-id]')?.click();
-    const input = folder.element.querySelector<HTMLInputElement>('input');
-    expect(input).toBeTruthy();
-    if (input) {
-      input.value = '5';
-      input.dispatchEvent(new Event('change', { bubbles: true }));
+    // Index 1: first number input (geometry.width) — index 0 is the Name text input
+    const inputs = folder.element.querySelectorAll<HTMLInputElement>('input');
+    const widthInput = inputs[1];
+    expect(widthInput).toBeTruthy();
+    if (widthInput) {
+      widthInput.value = '5';
+      widthInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
     const mesh = sm.getObject(boxEl.id);
     expect((mesh as THREE.Mesh).geometry).toBeInstanceOf(THREE.BoxGeometry);

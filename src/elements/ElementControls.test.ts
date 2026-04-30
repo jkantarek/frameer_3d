@@ -41,14 +41,6 @@ describe('createElementControls', () => {
     }).not.toThrow();
   });
 
-  it('bind(box) adds 4 children to folder (3 parametric + 1 fixed)', () => {
-    const folder = makeFolder();
-    createElementControls(folder).bind(createBox(), () => {
-      return;
-    });
-    expect(folder.children.length).toBe(4);
-  });
-
   it('clear() after bind removes all children', () => {
     const folder = makeFolder();
     const controls = createElementControls(folder);
@@ -59,7 +51,7 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(0);
   });
 
-  it('bind twice keeps only 4 children', () => {
+  it('bind twice keeps only 5 children', () => {
     const folder = makeFolder();
     const controls = createElementControls(folder);
     controls.bind(createBox(), () => {
@@ -68,7 +60,7 @@ describe('createElementControls', () => {
     controls.bind(createBox(), () => {
       return;
     });
-    expect(folder.children.length).toBe(4);
+    expect(folder.children.length).toBe(5);
   });
 
   it('onChange called with updated element when number input changes', () => {
@@ -79,11 +71,13 @@ describe('createElementControls', () => {
     controls.bind(box, (el) => {
       changes.push(el);
     });
-    const input = folder.element.querySelector<HTMLInputElement>('input');
-    expect(input).toBeTruthy();
-    if (input) {
-      input.value = '5';
-      input.dispatchEvent(new Event('change', { bubbles: true }));
+    // Index 1: first number input (geometry.width) — index 0 is the Name text input
+    const inputs = folder.element.querySelectorAll<HTMLInputElement>('input');
+    const widthInput = inputs[1];
+    expect(widthInput).toBeTruthy();
+    if (widthInput) {
+      widthInput.value = '5';
+      widthInput.dispatchEvent(new Event('change', { bubbles: true }));
     }
     expect(changes.length).toBe(1);
     const updated = changes[0];
@@ -101,7 +95,7 @@ describe('createElementControls', () => {
     controls.bind(el, (u) => {
       changes.push(u);
     });
-    expect(folder.children.length).toBe(1);
+    expect(folder.children.length).toBe(2); // 1 Name + 1 boolean
   });
 
   it('bind with color attribute creates a color binding', () => {
@@ -110,6 +104,32 @@ describe('createElementControls', () => {
     controls.bind(makeElementWith('color', '#ff0000'), () => {
       return;
     });
-    expect(folder.children.length).toBe(1);
+    expect(folder.children.length).toBe(2); // 1 Name + 1 color
+  });
+
+  it('bind(box) adds 5 children to folder (1 Name + 3 parametric + 1 fixed)', () => {
+    const folder = makeFolder();
+    createElementControls(folder).bind(createBox(), () => {
+      return;
+    });
+    expect(folder.children.length).toBe(5);
+  });
+
+  it('onChange called with updated label when Name input changes', () => {
+    const folder = makeFolder();
+    const controls = createElementControls(folder);
+    const box = createBox();
+    const changes: SceneElement[] = [];
+    controls.bind(box, (el) => {
+      changes.push(el);
+    });
+    const input = folder.element.querySelector<HTMLInputElement>('input');
+    expect(input).toBeTruthy();
+    if (input) {
+      input.value = 'MyBox';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    expect(changes.length).toBe(1);
+    expect(changes[0]?.label).toBe('MyBox');
   });
 });
