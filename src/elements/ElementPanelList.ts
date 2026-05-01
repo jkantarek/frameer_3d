@@ -10,14 +10,14 @@ export function buildElementItem(
   onRemove: (id: string) => void,
 ): void {
   const btn = folder.addButton({ title: el.label });
-  btn.element.dataset.elementId = el.id;
-  btn.element.dataset.depth = String(depth);
+  btn.element.dataset['elementId'] = el.id;
+  btn.element.dataset['depth'] = String(depth);
   btn.element.setAttribute('aria-selected', String(el.id === getSelected()));
   btn.element.addEventListener('click', () => {
     onSelect(el);
   });
   const removeBtn = document.createElement('button');
-  removeBtn.dataset.removeFor = el.id;
+  removeBtn.dataset['removeFor'] = el.id;
   removeBtn.textContent = '×';
   removeBtn.hidden = true;
   removeBtn.addEventListener('click', () => {

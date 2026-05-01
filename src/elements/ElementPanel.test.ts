@@ -81,7 +81,7 @@ describe('createElementPanel', () => {
     localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
     const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
     const el = findElementItem(panel, boxEl.id);
-    expect(el?.dataset.elementId).toBe(boxEl.id);
+    expect(el?.dataset['elementId']).toBe(boxEl.id);
     expect(el?.textContent).toContain(boxEl.label);
     localStorage.clear();
   });
@@ -92,7 +92,7 @@ describe('createElementPanel', () => {
     localStorage.setItem(KEY, JSON.stringify({ elements: [parent] }));
     const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
     expect(panel.getElement().querySelectorAll('[data-element-id]').length).toBe(2);
-    expect(findElementItem(panel, child.id)?.dataset.depth).toBe('1');
+    expect(findElementItem(panel, child.id)?.dataset['depth']).toBe('1');
     localStorage.clear();
   });
 

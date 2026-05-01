@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createTransformGizmo } from './TransformGizmo.js';
+import type { TcEventMap } from './TransformGizmo.js';
 
 class FakeOrbitControls {
   enabled = true;
 }
 
-class FakeTransformControls extends THREE.EventDispatcher {
+class FakeTransformControls extends THREE.EventDispatcher<TcEventMap> {
   attachCalled = false;
   detachCalled = false;
   lastMode: string | undefined;

@@ -274,9 +274,9 @@ row has a `[data-remove-for]` button; that button is `hidden` when the row is no
 selected, `hidden = false` when the row is selected; clicking it removes the element and
 clears controls; `+` button appears after all element rows in DOM order.
 
-- [ ] P009F001T001 Update `src/elements/ElementPanel.remove.test.ts`: remove `#elements-remove-btn` assertions; add — no `#elements-remove-btn` in panel; each element row contains `[data-remove-for]` button; that button `hidden === true` by default; after selecting a row its `[data-remove-for]` button has `hidden === false`; clicking `[data-remove-for]` on selected row removes element from store and scene (RED — implementation still has panel-level button)
-- [ ] P009F001T002 Update `src/elements/ElementPanel.ts`: move `elementsFolder` + `renderList(...)` call **before** `addBtn`/`pickerFolder` creation; remove panel-level `removeBtn` block; inside `buildElementItem` append a raw `<button data-remove-for="...">×</button>` with `hidden = true` after `btn.element`; on `onSelect` set the active row's `[data-remove-for]` button `hidden = false` and all others `hidden = true`; on remove callback call `removeElement`, `save`, `renderer.sync`, `controls.clear`, reset `selectedId = undefined`
-- [ ] P009F001T003 Add CSS in `src/style.css` for `[data-remove-for]` button styling (compact, right-aligned, visual appearance — no test needed)
+- [x] P009F001T001 Update `src/elements/ElementPanel.remove.test.ts`: remove `#elements-remove-btn` assertions; add — no `#elements-remove-btn` in panel; each element row contains `[data-remove-for]` button; that button `hidden === true` by default; after selecting a row its `[data-remove-for]` button has `hidden === false`; clicking `[data-remove-for]` on selected row removes element from store and scene (RED — implementation still has panel-level button)
+- [x] P009F001T002 Update `src/elements/ElementPanel.ts`: move `elementsFolder` + `renderList(...)` call **before** `addBtn`/`pickerFolder` creation; remove panel-level `removeBtn` block; inside `buildElementItem` append a raw `<button data-remove-for="...">×</button>` with `hidden = true` after `btn.element`; on `onSelect` set the active row's `[data-remove-for]` button `hidden = false` and all others `hidden = true`; on remove callback call `removeElement`, `save`, `renderer.sync`, `controls.clear`, reset `selectedId = undefined`
+- [x] P009F001T003 Add CSS in `src/style.css` for `[data-remove-for]` button styling (compact, right-aligned, visual appearance — no test needed)
 
 **Exit Criteria**:
 
@@ -303,8 +303,8 @@ control pane; the row label in the element list updates immediately.
 **Independent test criteria**: After `bind()`, the folder has `parametric + fixed + 1`
 children (Name is the first); changing the Name input fires `onChange` with `{ ...element, label: newValue }`.
 
-- [ ] P010F001T001 Add test to `src/elements/ElementControls.test.ts`: after `bind(createBox(), cb)` the folder has `5` children (1 Name + 3 parametric + 1 fixed); simulating a change on the first binding fires `onChange` with updated `label` (RED — `bind()` does not currently add a Name binding)
-- [ ] P010F001T002 In `src/elements/ElementControls.ts` add at the START of `bind()`: `const labelProxy = { label: element.label }; const labelBinding = folder.addBinding(labelProxy, 'label', { label: 'Name' }); labelBinding.on('change', ev => { current = { ...current, label: ev.value }; onChange(current); });` where `current` tracks the mutable element throughout all binding callbacks
+- [x] P010F001T001 Add test to `src/elements/ElementControls.test.ts`: after `bind(createBox(), cb)` the folder has `5` children (1 Name + 3 parametric + 1 fixed); simulating a change on the first binding fires `onChange` with updated `label` (RED — `bind()` does not currently add a Name binding)
+- [x] P010F001T002 In `src/elements/ElementControls.ts` add at the START of `bind()`: `const labelProxy = { label: element.label }; const labelBinding = folder.addBinding(labelProxy, 'label', { label: 'Name' }); labelBinding.on('change', ev => { current = { ...current, label: ev.value }; onChange(current); });` where `current` tracks the mutable element throughout all binding callbacks
 
 **Exit Criteria**:
 
@@ -330,10 +330,10 @@ depth, color); `createSphere()` has 2; `createCylinder()` has 3; `createPlane()`
 a valid `SceneElement` with `geometry.type = 'plane'`, `geometry.width`, `geometry.height`,
 and `material.color`.
 
-- [ ] P011F001T001 Update inline doctests in `src/elements/PrimitiveFactory.ts` for `createBox`, `createSphere`, `createCylinder`: change `parametric_attributes.length` assertions to `4`, `2`, `3` respectively; add assertion that a `material.color` attribute with `attribute_value === '#888888'` exists (RED — attribute not yet added)
-- [ ] P011F001T002 Add `material.color` parametric attribute (type `'color'`, value `"#888888"`) to `createBox`, `createSphere`, `createCylinder` in `src/elements/PrimitiveFactory.ts`; attribute appears last in `parametric_attributes` array
-- [ ] P011F002T001 Write inline doctest for `createPlane()` in `src/elements/PrimitiveFactory.ts`: `el.fixed_attributes.find(a => a.attribute_uri_key === 'geometry.type')?.attribute_value === 'plane'`; `el.parametric_attributes.length === 3` (width, height, color); `el.origin_attributes.length === 3` (RED — function does not exist)
-- [ ] P011F002T002 Implement `createPlane(label?: string): SceneElement` in `src/elements/PrimitiveFactory.ts` (width `"2"`, height `"2"`, color `"#888888"`, type `"plane"`, position.x/y/z = 0); export from `src/elements/index.ts`
+- [x] P011F001T001 Update inline doctests in `src/elements/PrimitiveFactory.ts` for `createBox`, `createSphere`, `createCylinder`: change `parametric_attributes.length` assertions to `4`, `2`, `3` respectively; add assertion that a `material.color` attribute with `attribute_value === '#888888'` exists (RED — attribute not yet added)
+- [x] P011F001T002 Add `material.color` parametric attribute (type `'color'`, value `"#888888"`) to `createBox`, `createSphere`, `createCylinder` in `src/elements/PrimitiveFactory.ts`; attribute appears last in `parametric_attributes` array
+- [x] P011F002T001 Write inline doctest for `createPlane()` in `src/elements/PrimitiveFactory.ts`: `el.fixed_attributes.find(a => a.attribute_uri_key === 'geometry.type')?.attribute_value === 'plane'`; `el.parametric_attributes.length === 3` (width, height, color); `el.origin_attributes.length === 3` (RED — function does not exist)
+- [x] P011F002T002 Implement `createPlane(label?: string): SceneElement` in `src/elements/PrimitiveFactory.ts` (width `"2"`, height `"2"`, color `"#888888"`, type `"plane"`, position.x/y/z = 0); export from `src/elements/index.ts`
 
 **Exit Criteria**:
 
@@ -359,8 +359,8 @@ with `material.side === THREE.BackSide`; scale > 1; calling `attach` twice is id
 `detach(mesh)` removes the child; `detach` on a mesh without the child is a no-op;
 `clear(sceneManager, id)` removes the outline from the mesh at the given id.
 
-- [ ] P012F001T001 Write `src/elements/SelectionHighlight.test.ts`: create a real `SceneManager` with `MockSceneRenderer`; test all five cases above (RED — file and function do not exist)
-- [ ] P012F001T002 Implement `createSelectionHighlight()` in `src/elements/SelectionHighlight.ts`; `attach(mesh)`: guard against double-attach by checking `mesh.getObjectByName('__selection-outline__')`; clone geometry, create `new THREE.MeshStandardMaterial({ color: 0x00aaff, side: THREE.BackSide })`; set `scale.setScalar(1.015)`, `name = '__selection-outline__'`, add as child; `detach(mesh)`: find by name, `mesh.remove(child)`; `clear(sm, id)`: call `detach(sm.getObject(id) as THREE.Mesh)` if object found; export `SelectionHighlightApi` type and factory from `src/elements/index.ts`
+- [x] P012F001T001 Write `src/elements/SelectionHighlight.test.ts`: create a real `SceneManager` with `MockSceneRenderer`; test all five cases above (RED — file and function do not exist)
+- [x] P012F001T002 Implement `createSelectionHighlight()` in `src/elements/SelectionHighlight.ts`; `attach(mesh)`: guard against double-attach by checking `mesh.getObjectByName('__selection-outline__')`; clone geometry, create `new THREE.MeshStandardMaterial({ color: 0x00aaff, side: THREE.BackSide })`; set `scale.setScalar(1.015)`, `name = '__selection-outline__'`, add as child; `detach(mesh)`: find by name, `mesh.remove(child)`; `clear(sm, id)`: call `detach(sm.getObject(id) as THREE.Mesh)` if object found; export `SelectionHighlightApi` type and factory from `src/elements/index.ts`
 
 **Exit Criteria**:
 
@@ -388,8 +388,8 @@ is `false` while fake dispatches `dragging-changed` with `value: true`, and `tru
 `onObjectChange(cb)` callback fires when fake dispatches `objectChange`; `onDragEnd(cb)`
 fires when `dragging-changed` fires with `value: false`; `dispose()` does not throw.
 
-- [ ] P013F001T001 Write `src/scene/TransformGizmo.test.ts`: define `FakeTransformControls` extending `THREE.EventDispatcher` with stub methods (`attach`, `detach`, `setMode`, `dispose`) and override `getHelper` to return `this` as `THREE.Object3D`; inject via `_tcFactory`; test all five criteria above (RED — file and function do not exist)
-- [ ] P013F001T002 Implement `createTransformGizmo` in `src/scene/TransformGizmo.ts`; on `dragging-changed` event: `orbitControls.enabled = !ev.value`; when `ev.value === false` also fire all `onDragEnd` callbacks; on `objectChange` fire all `onObjectChange` callbacks; `getHelper()` returns `tc` (TransformControls is an Object3D); export `TransformGizmoApi` and `TransformMode` types
+- [x] P013F001T001 Write `src/scene/TransformGizmo.test.ts`: define `FakeTransformControls` extending `THREE.EventDispatcher` with stub methods (`attach`, `detach`, `setMode`, `dispose`) and override `getHelper` to return `this` as `THREE.Object3D`; inject via `_tcFactory`; test all five criteria above (RED — file and function do not exist)
+- [x] P013F001T002 Implement `createTransformGizmo` in `src/scene/TransformGizmo.ts`; on `dragging-changed` event: `orbitControls.enabled = !ev.value`; when `ev.value === false` also fire all `onDragEnd` callbacks; on `objectChange` fire all `onObjectChange` callbacks; `getHelper()` returns `tc` (TransformControls is an Object3D); export `TransformGizmoApi` and `TransformMode` types
 
 **Exit Criteria**:
 
@@ -414,10 +414,10 @@ to an internally owned `SelectionHighlight` instance.
 created; `setSelected(id)` adds `__selection-outline__` child; `setSelected(undefined)`
 removes it.
 
-- [ ] P014F001T001 Add tests to `src/elements/ElementRenderer.test.ts`: box with `material.color = '#ff0000'` — after `sync`, `(mesh.material as THREE.MeshStandardMaterial).color.getHexString() === 'ff0000'`; plane element (via `createPlane()`) — after `sync`, mesh is `instanceof THREE.Mesh` (RED — renderer does not read color or handle plane)
-- [ ] P014F001T002 Update `src/elements/ElementRenderer.ts`: add `'plane'` case in geometry builder using `new THREE.PlaneGeometry(w, h)`; for plane materials use `side: THREE.DoubleSide`; read `material.color` from `parametric_attributes` via `Array.find`; pass color string to `new THREE.MeshStandardMaterial({ color: colorValue })`
-- [ ] P014F002T001 Add tests to `src/elements/ElementRenderer.test.ts` for `setSelected(id)` and `setSelected(undefined)`: after sync with box, `renderer.setSelected(box.id)` → `sceneManager.getObject(box.id)` has a child named `'__selection-outline__'`; `renderer.setSelected(undefined)` → child removed (RED — `ElementRendererApi` has no `setSelected`)
-- [ ] P014F002T002 Add `setSelected(id: string | undefined): void` to `ElementRendererApi` interface in `src/elements/ElementTypes.ts` (or `ElementRenderer.ts`); implement using `createSelectionHighlight()` instance stored in closure; update `src/elements/index.ts` re-exports if needed
+- [x] P014F001T001 Add tests to `src/elements/ElementRenderer.test.ts`: box with `material.color = '#ff0000'` — after `sync`, `(mesh.material as THREE.MeshStandardMaterial).color.getHexString() === 'ff0000'`; plane element (via `createPlane()`) — after `sync`, mesh is `instanceof THREE.Mesh` (RED — renderer does not read color or handle plane)
+- [x] P014F001T002 Update `src/elements/ElementRenderer.ts`: add `'plane'` case in geometry builder using `new THREE.PlaneGeometry(w, h)`; for plane materials use `side: THREE.DoubleSide`; read `material.color` from `parametric_attributes` via `Array.find`; pass color string to `new THREE.MeshStandardMaterial({ color: colorValue })`
+- [x] P014F002T001 Add tests to `src/elements/ElementRenderer.test.ts` for `setSelected(id)` and `setSelected(undefined)`: after sync with box, `renderer.setSelected(box.id)` → `sceneManager.getObject(box.id)` has a child named `'__selection-outline__'`; `renderer.setSelected(undefined)` → child removed (RED — `ElementRendererApi` has no `setSelected`)
+- [x] P014F002T002 Add `setSelected(id: string | undefined): void` to `ElementRendererApi` interface in `src/elements/ElementTypes.ts` (or `ElementRenderer.ts`); implement using `createSelectionHighlight()` instance stored in closure; update `src/elements/index.ts` re-exports if needed
 
 **Exit Criteria**:
 
@@ -440,8 +440,8 @@ exposes `getTransformGizmo(): TransformGizmoApi` on `ViewportApi`.
 **Independent test criteria**: `viewport.getTransformGizmo()` returns an object with
 `attach`, `detach`, `setMode`, `getHelper`, `onObjectChange`, `onDragEnd`, `dispose`.
 
-- [ ] P015F001T001 Add test to `src/viewport/Viewport.test.ts`: `createViewport(...)` returns object with `getTransformGizmo()` method; calling it returns a non-null object that has all 7 `TransformGizmoApi` methods (RED — `ViewportApi` does not include `getTransformGizmo`)
-- [ ] P015F001T002 Update `src/viewport/Viewport.ts`: import `createTransformGizmo` from `'../scene/TransformGizmo.js'`; create `const gizmo = createTransformGizmo(camera, canvas, controls)` after `controls` is set up; call `sceneManager.addObject('__transform-gizmo__', gizmo.getHelper())`; add `getTransformGizmo(): TransformGizmoApi` to `ViewportApi` interface and return object
+- [x] P015F001T001 Add test to `src/viewport/Viewport.test.ts`: `createViewport(...)` returns object with `getTransformGizmo()` method; calling it returns a non-null object that has all 7 `TransformGizmoApi` methods (RED — `ViewportApi` does not include `getTransformGizmo`)
+- [x] P015F001T002 Update `src/viewport/Viewport.ts`: import `createTransformGizmo` from `'../scene/TransformGizmo.js'`; create `const gizmo = createTransformGizmo(camera, canvas, controls)` after `controls` is set up; call `sceneManager.addObject('__transform-gizmo__', gizmo.getHelper())`; add `getTransformGizmo(): TransformGizmoApi` to `ViewportApi` interface and return object
 
 **Exit Criteria**:
 
@@ -468,10 +468,10 @@ is called on select and `detach` on remove; `onObjectChange` updates origin_attr
 in the store without re-building the mesh; `onDragEnd` triggers `renderer.sync`; the
 picker contains a `'Plane'` button that creates a plane element.
 
-- [ ] P016F001T001 Write `src/elements/ElementPanel.gizmo.test.ts`: create a `TransformGizmoApi` stub (plain object implementing the interface — records calls); pass as 4th arg to `createElementPanel`; assert `stub.attach` called on row select; `stub.detach` called on remove; `onObjectChange` callback given to stub fires a position update stored in `load().elements[0].origin_attributes`; `onDragEnd` callback triggers a `renderer.sync` call (RED — 4th param not yet accepted)
-- [ ] P016F001T002 Update `src/elements/ElementPanel.ts`: add optional `transformGizmo?: TransformGizmoApi` as 4th param; in `onSelect`: call `renderer.setSelected(selectedId)` and `transformGizmo?.attach(sceneManager.getObject(selectedId))`; in remove callback: call `renderer.setSelected(undefined)` and `transformGizmo?.detach()`; on mount register `transformGizmo?.onObjectChange((obj) => { /* update origin_attributes from obj.position, save(state), no sync */ })` and `transformGizmo?.onDragEnd(() => renderer.sync(state))`
-- [ ] P016F002T001 Add test to `src/elements/ElementPanel.test.ts`: picker buttons include `'Plane'`; clicking Plane creates a plane element in the scene (RED — 'Plane' not in picker)
-- [ ] P016F002T002 Add `'Plane'` button to the picker types array in `src/elements/ElementPanel.ts`; import `createPlane` from `'./PrimitiveFactory.js'`; map `'Plane'` → `createPlane()`
+- [x] P016F001T001 Write `src/elements/ElementPanel.gizmo.test.ts`: create a `TransformGizmoApi` stub (plain object implementing the interface — records calls); pass as 4th arg to `createElementPanel`; assert `stub.attach` called on row select; `stub.detach` called on remove; `onObjectChange` callback given to stub fires a position update stored in `load().elements[0].origin_attributes`; `onDragEnd` callback triggers a `renderer.sync` call (RED — 4th param not yet accepted)
+- [x] P016F001T002 Update `src/elements/ElementPanel.ts`: add optional `transformGizmo?: TransformGizmoApi` as 4th param; in `onSelect`: call `renderer.setSelected(selectedId)` and `transformGizmo?.attach(sceneManager.getObject(selectedId))`; in remove callback: call `renderer.setSelected(undefined)` and `transformGizmo?.detach()`; on mount register `transformGizmo?.onObjectChange((obj) => { /* update origin_attributes from obj.position, save(state), no sync */ })` and `transformGizmo?.onDragEnd(() => renderer.sync(state))`
+- [x] P016F002T001 Add test to `src/elements/ElementPanel.test.ts`: picker buttons include `'Plane'`; clicking Plane creates a plane element in the scene (RED — 'Plane' not in picker)
+- [x] P016F002T002 Add `'Plane'` button to the picker types array in `src/elements/ElementPanel.ts`; import `createPlane` from `'./PrimitiveFactory.js'`; map `'Plane'` → `createPlane()`
 
 **Exit Criteria**:
 
@@ -502,10 +502,10 @@ persists across reloads; enabling "Follow system" automatically matches OS prefe
 - `detectSystemTheme(mq)` returns `'dark'` / `'light'` based on injected `mq` stub
 - `createSystemPanel(settings)` returns object with `dispose()`; changing Theme fires `onThemeChange`
 
-- [ ] P017F001T001 Write `src/system/SystemSettings.test.ts`: test `loadSettings()` with no localStorage key → fallback; `saveSettings` + `loadSettings` round-trip; `applyTheme({ theme: 'light', followSystem: false })` → `document.documentElement.dataset['theme'] === 'light'`; `detectSystemTheme((q) => ({ matches: true }))` → `'dark'`; `detectSystemTheme((q) => ({ matches: false }))` → `'light'` (RED — file does not exist)
-- [ ] P017F001T002 Implement `src/system/SystemSettings.ts`: `loadSettings(storage?: Storage)`, `saveSettings(data, storage?)`, `applyTheme(data)` (sets `document.documentElement.dataset['theme']`), `detectSystemTheme(mq?: (q: string) => { matches: boolean })` (defaults to `window.matchMedia`); export `ThemeValue` type and `SystemSettingsData` interface
-- [ ] P017F002T001 Write `src/system/SystemPanel.test.ts`: `createSystemPanel({ theme: 'dark', followSystem: false })` returns `{ dispose }`; `dispose()` does not throw; simulate binding change → `onThemeChange` callback called (RED — file does not exist)
-- [ ] P017F002T002 Implement `src/system/SystemPanel.ts`: create Tweakpane `Pane` with `style.position = 'fixed'; style.bottom = '1rem'; style.left = '1rem'`; bind `theme` (list: `{ Dark: 'dark', Light: 'light' }`) and `followSystem` (checkbox); on any change: `saveSettings(data)`, `applyTheme(data)`, optional `onThemeChange(data.theme)`; when `followSystem` toggled true: call `detectSystemTheme()` and register `matchMedia('prefers-color-scheme: dark').addEventListener('change', ...)` listener; when toggled false: remove listener; export `SystemPanelApi` type and `createSystemPanel` factory
+- [x] P017F001T001 Write `src/system/SystemSettings.test.ts`: test `loadSettings()` with no localStorage key → fallback; `saveSettings` + `loadSettings` round-trip; `applyTheme({ theme: 'light', followSystem: false })` → `document.documentElement.dataset['theme'] === 'light'`; `detectSystemTheme((q) => ({ matches: true }))` → `'dark'`; `detectSystemTheme((q) => ({ matches: false }))` → `'light'` (RED — file does not exist)
+- [x] P017F001T002 Implement `src/system/SystemSettings.ts`: `loadSettings(storage?: Storage)`, `saveSettings(data, storage?)`, `applyTheme(data)` (sets `document.documentElement.dataset['theme']`), `detectSystemTheme(mq?: (q: string) => { matches: boolean })` (defaults to `window.matchMedia`); export `ThemeValue` type and `SystemSettingsData` interface
+- [x] P017F002T001 Write `src/system/SystemPanel.test.ts`: `createSystemPanel({ theme: 'dark', followSystem: false })` returns `{ dispose }`; `dispose()` does not throw; simulate binding change → `onThemeChange` callback called (RED — file does not exist)
+- [x] P017F002T002 Implement `src/system/SystemPanel.ts`: create Tweakpane `Pane` with `style.position = 'fixed'; style.bottom = '1rem'; style.left = '1rem'`; bind `theme` (list: `{ Dark: 'dark', Light: 'light' }`) and `followSystem` (checkbox); on any change: `saveSettings(data)`, `applyTheme(data)`, optional `onThemeChange(data.theme)`; when `followSystem` toggled true: call `detectSystemTheme()` and register `matchMedia('prefers-color-scheme: dark').addEventListener('change', ...)` listener; when toggled false: remove listener; export `SystemPanelApi` type and `createSystemPanel` factory
 
 **Exit Criteria**:
 
@@ -530,10 +530,10 @@ with a background-update callback.
 
 > `main.ts` is excluded from coverage; no TDD cycle — wiring and verification only.
 
-- [ ] P018F001T001 Add CSS custom properties to `src/style.css`: `:root` dark defaults (`--bg: #1a1a2e; --fg: #e8e8e8; --panel-bg: #16213e; --panel-border: #0f3460; --accent: #00aaff;`); `[data-theme="light"]` overrides (`--bg: #f4f4f4; --fg: #1a1a1a; --panel-bg: #ffffff; --panel-border: #cccccc; --accent: #0066cc;`); apply variables to `body`, `#elements-panel`, and any other affected selectors
-- [ ] P018F001T002 Update `src/main.ts`: `import { applyTheme, loadSettings } from './system/SystemSettings.js'`; make `applyTheme(loadSettings())` the **first statement** of `main()` (before DOM setup); `import { createSystemPanel } from './system/SystemPanel.js'`; call `createSystemPanel(settings, (theme) => sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e'))` after viewport setup
-- [ ] P018F002T001 Update `src/main.ts`: pass `viewport.getTransformGizmo()` as the 4th argument to `createElementPanel`; run `pnpm typecheck` + `pnpm lint` to confirm zero errors
-- [ ] P018F002T002 Smoke-test `pnpm dev`: dark theme loads by default; System panel is visible in bottom-left; switching to Light changes viewport background; adding Box/Sphere/Cylinder/Plane creates meshes in scene; selecting mesh shows gizmo + outline; inline × removes element; run `pnpm build` to confirm zero errors
+- [x] P018F001T001 Add CSS custom properties to `src/style.css`: `:root` dark defaults (`--bg: #1a1a2e; --fg: #e8e8e8; --panel-bg: #16213e; --panel-border: #0f3460; --accent: #00aaff;`); `[data-theme="light"]` overrides (`--bg: #f4f4f4; --fg: #1a1a1a; --panel-bg: #ffffff; --panel-border: #cccccc; --accent: #0066cc;`); apply variables to `body`, `#elements-panel`, and any other affected selectors
+- [x] P018F001T002 Update `src/main.ts`: `import { applyTheme, loadSettings } from './system/SystemSettings.js'`; make `applyTheme(loadSettings())` the **first statement** of `main()` (before DOM setup); `import { createSystemPanel } from './system/SystemPanel.js'`; call `createSystemPanel(settings, (theme) => sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e'))` after viewport setup
+- [x] P018F002T001 Update `src/main.ts`: pass `viewport.getTransformGizmo()` as the 4th argument to `createElementPanel`; run `pnpm typecheck` + `pnpm lint` to confirm zero errors
+- [x] P018F002T002 Smoke-test `pnpm dev`: dark theme loads by default; System panel is visible in bottom-left; switching to Light changes viewport background; adding Box/Sphere/Cylinder/Plane creates meshes in scene; selecting mesh shows gizmo + outline; inline × removes element; run `pnpm build` to confirm zero errors
 
 **Exit Criteria**:
 

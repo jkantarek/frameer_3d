@@ -13,7 +13,7 @@ function makeElementWith(type: 'boolean' | 'color', value: string): SceneElement
   return {
     id: 'test-id',
     label: 'Test',
-    primitive_type: 'box',
+    description: '',
     origin_attributes: [],
     parametric_attributes: [
       {

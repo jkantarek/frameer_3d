@@ -47,10 +47,10 @@ export function createElementPanel(
   function onSelect(element: SceneElement): void {
     selectedId = element.id;
     panel.querySelectorAll<HTMLElement>('[data-element-id]').forEach((el) => {
-      el.setAttribute('aria-selected', String(el.dataset.elementId === element.id));
+      el.setAttribute('aria-selected', String(el.dataset['elementId'] === element.id));
     });
     panel.querySelectorAll<HTMLButtonElement>('[data-remove-for]').forEach((btn) => {
-      btn.hidden = btn.dataset.removeFor !== element.id;
+      btn.hidden = btn.dataset['removeFor'] !== element.id;
     });
     renderer.setSelected(element.id);
     const mesh = sceneManager.getObject(element.id);

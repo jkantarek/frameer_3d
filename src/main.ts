@@ -5,8 +5,13 @@ import { createControlPane } from './controls/ControlPane.js';
 import { loadLayoutState } from './layout/LayoutState.js';
 import { loadOcct } from './occt/OccKernel.js';
 import { createElementPanel } from './elements/index.js';
+import { applyTheme, loadSettings } from './system/SystemSettings.js';
+import { createSystemPanel } from './system/SystemPanel.js';
 
 export function main(): void {
+  const settings = loadSettings();
+  applyTheme(settings);
+
   const canvas = document.getElementById('viewport');
   if (!(canvas instanceof HTMLCanvasElement)) {
     throw new Error('No canvas element with id="viewport" found');
@@ -20,7 +25,7 @@ export function main(): void {
 
   const viewport = createViewport(canvas);
   const sceneManager = viewport.getSceneManager();
-  sceneManager.setBackground('#1a1a2e');
+  sceneManager.setBackground(settings.theme === 'light' ? '#e8e8ec' : '#1a1a2e');
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
 
   const controlPane = createControlPane(controlsContainer, layoutState);
@@ -31,7 +36,11 @@ export function main(): void {
     throw new Error('Canvas has no parent HTMLElement');
   }
 
-  createElementPanel(viewportContainer, sceneManager, elementFolder);
+  createElementPanel(viewportContainer, sceneManager, elementFolder, viewport.getTransformGizmo());
+
+  createSystemPanel(settings, (theme) => {
+    sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e');
+  });
 
   void loadOcct().catch((err: unknown) => {
     console.warn('OCCT load failed:', err);

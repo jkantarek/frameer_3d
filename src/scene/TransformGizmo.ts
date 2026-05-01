@@ -14,7 +14,12 @@ export interface TransformGizmoApi {
   dispose(): void;
 }
 
-type TcLike = THREE.EventDispatcher & {
+export interface TcEventMap {
+  'dragging-changed': { readonly value: boolean };
+  objectChange: object;
+}
+
+type TcLike = THREE.EventDispatcher<TcEventMap> & {
   attach(obj: THREE.Object3D): void;
   detach(): void;
   setMode(mode: string): void;
@@ -41,7 +46,7 @@ export function createTransformGizmo(
   const objectChangeCallbacks: (() => void)[] = [];
   const dragEndCallbacks: (() => void)[] = [];
 
-  tc.addEventListener('dragging-changed', (ev: { value: boolean }) => {
+  tc.addEventListener('dragging-changed', (ev) => {
     orbitControls.enabled = !ev.value;
     if (!ev.value) {
       for (const cb of dragEndCallbacks) cb();
