@@ -30,11 +30,13 @@ function makeFolder(): FolderApi {
 
 class FakeGizmo implements TransformGizmoApi {
   attachedObject: THREE.Object3D | undefined;
+  attachCallCount = 0;
   detachCalled = false;
   objectChangeCb: (() => void) | undefined;
   dragEndCb: (() => void) | undefined;
 
   attach(object: THREE.Object3D | undefined): void {
+    this.attachCallCount++;
     this.attachedObject = object;
   }
   detach(): void {
@@ -109,6 +111,40 @@ describe('createElementPanel — gizmo wiring', () => {
       gizmo.dragEndCb?.();
     }).not.toThrow();
     expect(sm.getObject(boxEl.id)).toBeInstanceOf(THREE.Mesh);
+    localStorage.clear();
+  });
+
+  it('re-attaches gizmo after commit when element is selected', () => {
+    const boxEl = createBox();
+    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    const sm = makeSm();
+    const folder = makeFolder();
+    const gizmo = new FakeGizmo();
+    const panel = createElementPanel(document.createElement('div'), sm, folder, gizmo);
+    panel.getElement().querySelector<HTMLElement>('[data-element-id]')?.click();
+    expect(gizmo.attachCallCount).toBe(1);
+    const inputs = folder.element.querySelectorAll<HTMLInputElement>('input');
+    const widthInput = inputs[1];
+    if (widthInput) {
+      widthInput.value = '5';
+      widthInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    expect(gizmo.attachCallCount).toBe(2);
+    localStorage.clear();
+  });
+
+  it('re-attaches gizmo and selection after onDragEnd when element is selected', () => {
+    const boxEl = createBox();
+    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    const sm = makeSm();
+    const folder = makeFolder();
+    const gizmo = new FakeGizmo();
+    const panel = createElementPanel(document.createElement('div'), sm, folder, gizmo);
+    panel.getElement().querySelector<HTMLElement>('[data-element-id]')?.click();
+    const countBefore = gizmo.attachCallCount;
+    gizmo.dragEndCb?.();
+    expect(gizmo.attachCallCount).toBe(countBefore + 1);
+    expect(sm.getObject(boxEl.id)?.getObjectByName('__selection-outline__')).toBeTruthy();
     localStorage.clear();
   });
 });

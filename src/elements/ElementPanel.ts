@@ -62,40 +62,56 @@ export function createElementPanel(
     });
   }
 
-  transformGizmo?.onObjectChange(() => {
-    const newElements = state.elements.map((el) => {
-      const obj = sceneManager.getObject(el.id);
-      /* v8 ignore start */
-      if (obj === undefined) return el;
-      /* v8 ignore stop */
-      return {
-        ...el,
-        origin_attributes: el.origin_attributes.map((a) => {
-          if (a.dimension_uri_key === 'position.x')
-            return { ...a, dimension_uri_value: obj.position.x };
-          if (a.dimension_uri_key === 'position.y')
-            return { ...a, dimension_uri_value: obj.position.y };
-          /* v8 ignore start */
-          if (a.dimension_uri_key === 'position.z')
-            return { ...a, dimension_uri_value: obj.position.z };
-          return a;
-          /* v8 ignore stop */
-        }),
-      };
+  if (transformGizmo !== undefined) {
+    const gizmo = transformGizmo;
+    gizmo.onObjectChange(() => {
+      const newElements = state.elements.map((el) => {
+        const obj = sceneManager.getObject(el.id);
+        /* v8 ignore start */
+        if (obj === undefined) return el;
+        /* v8 ignore stop */
+        return {
+          ...el,
+          origin_attributes: el.origin_attributes.map((a) => {
+            if (a.dimension_uri_key === 'position.x')
+              return { ...a, dimension_uri_value: obj.position.x };
+            if (a.dimension_uri_key === 'position.y')
+              return { ...a, dimension_uri_value: obj.position.y };
+            /* v8 ignore start */
+            if (a.dimension_uri_key === 'position.z')
+              return { ...a, dimension_uri_value: obj.position.z };
+            return a;
+            /* v8 ignore stop */
+          }),
+        };
+      });
+      state = { elements: newElements };
+      save(state);
     });
-    state = { elements: newElements };
-    save(state);
-  });
-
-  transformGizmo?.onDragEnd(() => {
-    renderer.sync(state);
-  });
+    gizmo.onDragEnd(() => {
+      renderer.sync(state);
+      if (selectedId !== undefined) {
+        const mesh = sceneManager.getObject(selectedId);
+        if (mesh !== undefined) {
+          gizmo.attach(mesh);
+          renderer.setSelected(selectedId);
+        }
+      }
+    });
+  }
 
   function commit(newState: ElementStoreData): void {
     state = newState;
     save(state);
     renderer.sync(state);
     renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
+    if (transformGizmo !== undefined && selectedId !== undefined) {
+      const mesh = sceneManager.getObject(selectedId);
+      if (mesh !== undefined) {
+        transformGizmo.attach(mesh);
+        renderer.setSelected(selectedId);
+      }
+    }
   }
 
   renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);

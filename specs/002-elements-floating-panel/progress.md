@@ -10,6 +10,23 @@ Started: 2026-04-29 08:49:01
 - `src/elements/` is the new domain; `index.ts` is the public API entry point
 
 ---
+## Iteration 10 - 2026-05-01T06:18:08
+**User Story**: Phase 20 (P020) — Bug Fix: Color Attribute Value Not Applied to Mesh
+**Tasks Completed**: 
+- [x] P020F001T001: Added `it('color attribute creates simple text binding (no expanded color picker)')` to `ElementControls.test.ts` — RED confirmed (`inputs.length === 5` with `{ view: 'color' }` vs expected 2)
+- [x] P020F001T002: Changed `bindOpts('color')` to return `{ view: 'text' }` instead of `{ view: 'color' }` — forces plain text input (2 inputs instead of 5), no canvas error in jsdom
+**Tasks Remaining in Story**: None — story complete
+**Commit**: 4a403f5
+**Files Changed**: 
+- src/elements/ElementControls.ts
+- src/elements/ElementControls.test.ts
+- specs/002-elements-floating-panel/tasks.md
+**Learnings**:
+- Tweakpane v4 `StringColorInputPlugin` auto-detects `#rrggbb` strings as hex colors **regardless** of `{ view: 'color' }` option (it only rejects `{ view: 'text' }`). Both `{}` and `{ view: 'color' }` produce identical behavior (5 inputs: hex + R + G + B channels). Use `{ view: 'text' }` to force a plain text input (2 inputs: Name + text field).
+- The task's premise ("String(ev.value) returns [object Object]") doesn't hold in Tweakpane v4 for string-valued color bindings — the writer converts back to a hex string. The real fix is preventing the expanded color picker widget entirely via `{ view: 'text' }`.
+- Number of inputs is a reliable discriminator for color picker vs text input: 5 inputs = color picker, 2 inputs = plain text.
+---
+
 ## Iteration 9 - 2026-05-01T06:16:35
 **User Story**: Phase 19 (P019) — Bug Fix: Remove Opaque Sidebar Styles from #elements-panel
 **Tasks Completed**: 
