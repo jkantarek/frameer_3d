@@ -26,15 +26,38 @@ set -euo pipefail
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 usage() {
-  sed -n '3,/^set /p' "$0" | grep '^#' | sed 's/^# \{0,1\}//'
-  exit 1
+  cat <<'EOF'
+archive_spec.sh — Archive a spec folder to a GitHub issue and link it to a PR.
+
+Usage:
+  archive_spec.sh <spec-folder> <pr-number-or-url>
+  archive_spec.sh --help
+
+Arguments:
+  spec-folder   Path to the spec directory (relative to repo root), e.g.
+                specs/002-elements-floating-panel
+  pr            PR number or full GitHub PR URL, e.g. 2 or
+                https://github.com/owner/repo/pull/2
+
+Steps performed:
+  1. Create a GitHub issue with plan.md as the body
+  2. Post every other file (including contracts/**) as individual comments
+  3. Replace plan.md with a single line linking to the new issue
+  4. Delete all other files/subdirectories inside the spec folder
+  5. Commit and push the cleanup
+  6. Prepend "Closes #<issue>" to the PR body
+
+Requirements: gh CLI authenticated, git remote pointing to GitHub
+EOF
+  exit 0
 }
 
 die() { echo "error: $1" >&2; exit 1; }
 
 # ── argument parsing ───────────────────────────────────────────────────────────
 
-[[ $# -ge 2 ]] || usage
+[[ "${1:-}" == "--help" || "${1:-}" == "-h" ]] && usage
+[[ $# -ge 2 ]] || { echo "error: missing arguments"; echo ""; usage; }
 
 SPEC_DIR="${1%/}"   # strip trailing slash
 PR_ARG="$2"
