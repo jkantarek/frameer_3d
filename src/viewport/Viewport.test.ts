@@ -131,4 +131,17 @@ describe('createViewport', () => {
     vi.advanceTimersToNextFrame();
     expect(mock.renderCallCount).toBe(count);
   });
+
+  it('getTransformGizmo() returns a TransformGizmoApi with all 7 methods', () => {
+    const vp = createViewport(document.createElement('canvas'), new MockSceneRenderer());
+    const gizmo = vp.getTransformGizmo();
+    expect(typeof gizmo.attach).toBe('function');
+    expect(typeof gizmo.detach).toBe('function');
+    expect(typeof gizmo.setMode).toBe('function');
+    expect(typeof gizmo.getHelper).toBe('function');
+    expect(typeof gizmo.onObjectChange).toBe('function');
+    expect(typeof gizmo.onDragEnd).toBe('function');
+    expect(typeof gizmo.dispose).toBe('function');
+    vp.dispose();
+  });
 });

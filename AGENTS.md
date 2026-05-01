@@ -6,6 +6,21 @@ tooling configuration as a bug to fix, not a reason to relax the rule.
 
 ---
 
+## Reference Tools
+
+### Tweakpane UI Documentation
+
+When designing or extending any UI element that uses Tweakpane (panels, folders, bindings,
+buttons, monitors), consult the official docs via Context7 before implementing:
+
+- **Library ID**: `/cocopon/tweakpane`
+- **Usage**: Call the `mcp_context7_query-docs` tool with `libraryId: '/cocopon/tweakpane'`
+  and a specific query (e.g. `"how to add a folder"`, `"button click event"`,
+  `"read-only monitor binding"`).
+- Prefer Context7 over guessing the API shape — Tweakpane v4 has breaking changes from v3.
+
+---
+
 ## File Construction
 
 ### Size limit: 150 non-comment source lines

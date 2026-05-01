@@ -22,6 +22,9 @@ importers:
       tweakpane:
         specifier: ^4.0.5
         version: 4.0.5
+      ulid:
+        specifier: ^3.0.2
+        version: 3.0.2
     devDependencies:
       '@eslint/js':
         specifier: ^9.0.0
@@ -2391,6 +2394,13 @@ packages:
     engines: { node: '>=14.17' }
     hasBin: true
 
+  ulid@3.0.2:
+    resolution:
+      {
+        integrity: sha512-yu26mwteFYzBAot7KVMqFGCVpsF6g8wXfJzQUHvu1no3+rRRSFcSV2nKeYvNPLD2J4b08jYBDhHUjeH0ygIl9w==,
+      }
+    hasBin: true
+
   uri-js@4.4.1:
     resolution:
       {
@@ -3880,6 +3890,8 @@ snapshots:
       - supports-color
 
   typescript@5.9.3: {}
+
+  ulid@3.0.2: {}
 
   uri-js@4.4.1:
     dependencies:

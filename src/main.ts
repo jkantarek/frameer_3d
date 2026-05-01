@@ -4,8 +4,14 @@ import { createViewport } from './viewport/Viewport.js';
 import { createControlPane } from './controls/ControlPane.js';
 import { loadLayoutState } from './layout/LayoutState.js';
 import { loadOcct } from './occt/OccKernel.js';
+import { createElementPanel } from './elements/index.js';
+import { applyTheme, loadSettings } from './system/SystemSettings.js';
+import { createSystemPanel } from './system/SystemPanel.js';
 
 export function main(): void {
+  const settings = loadSettings();
+  applyTheme(settings);
+
   const canvas = document.getElementById('viewport');
   if (!(canvas instanceof HTMLCanvasElement)) {
     throw new Error('No canvas element with id="viewport" found');
@@ -19,10 +25,26 @@ export function main(): void {
 
   const viewport = createViewport(canvas);
   const sceneManager = viewport.getSceneManager();
-  sceneManager.setBackground('#1a1a2e');
+  sceneManager.setBackground(settings.theme === 'light' ? '#e8e8ec' : '#1a1a2e');
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
+  sceneManager.addObject('ambient', new THREE.AmbientLight(0xffffff, 0.6));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 7.5);
+  sceneManager.addObject('dir-light', dirLight);
 
-  createControlPane(controlsContainer, layoutState);
+  const controlPane = createControlPane(controlsContainer, layoutState);
+  const elementFolder = controlPane.addFolder('Element');
+
+  const viewportContainer = canvas.parentElement;
+  if (!(viewportContainer instanceof HTMLElement)) {
+    throw new Error('Canvas has no parent HTMLElement');
+  }
+
+  createElementPanel(viewportContainer, sceneManager, elementFolder, viewport.getTransformGizmo());
+
+  createSystemPanel(settings, (theme) => {
+    sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e');
+  });
 
   void loadOcct().catch((err: unknown) => {
     console.warn('OCCT load failed:', err);

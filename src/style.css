@@ -1,12 +1,43 @@
+:root {
+  --bg: #1a1a2e;
+  --fg: #e8e8e8;
+  --panel-bg: #16213e;
+  --panel-border: #0f3460;
+  --accent: #00aaff;
+}
+
+[data-theme='light'] {
+  --bg: #f4f4f4;
+  --fg: #1a1a1a;
+  --panel-bg: #ffffff;
+  --panel-border: #cccccc;
+  --accent: #0066cc;
+}
+
 body {
   height: 100dvh;
   overflow: hidden;
   margin: 0;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 #viewport-container {
+  position: relative;
   width: 100vw;
   height: 100dvh;
+}
+
+#elements-panel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#elements-panel > * {
+  pointer-events: auto;
 }
 
 canvas {
@@ -25,4 +56,22 @@ canvas {
 
 #drag-handle {
   display: none;
+}
+
+[data-remove-for] {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #e05;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+[data-remove-for]:hover {
+  color: #ff2244;
 }
