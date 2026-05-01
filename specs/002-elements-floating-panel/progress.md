@@ -212,3 +212,23 @@ Started: 2026-04-29 08:49:01
 **Learnings**:
 - `main.ts` is excluded from coverage so no test cycle needed; wiring only
 - All 7 quality gates passed immediately (118 tests, 100% coverage)
+
+---
+## Iteration 11 - 2026-05-01T06:36:00
+**User Story**: Phase 21 (P021) — Bug Fix: TransformGizmo Loses Attachment After renderer.sync
+**Tasks Completed**: 
+- [x] P021F001T001: Added `attachCallCount` to `FakeGizmo`; wrote test asserting re-attach after commit → RED (count stayed 1)
+- [x] P021F001T002: Updated `commit()` in `ElementPanel.ts` to re-attach gizmo + re-apply selection after `renderer.sync` when `selectedId !== undefined` → GREEN
+- [x] P021F002T001: Added test asserting re-attach after `onDragEnd` + `__selection-outline__` child on new mesh → RED
+- [x] P021F002T002: Refactored `transformGizmo?.onObjectChange` + `transformGizmo?.onDragEnd` into single `if (transformGizmo !== undefined)` block; added re-attach guard after `renderer.sync` in `onDragEnd` → GREEN
+**Tasks Remaining in Story**: None — story complete
+**Commit**: f621f76
+**Files Changed**: 
+- src/elements/ElementPanel.ts
+- src/elements/ElementPanel.gizmo.test.ts
+- specs/002-elements-floating-panel/tasks.md
+**Learnings**:
+- `transformGizmo !== undefined && selectedId !== undefined` combined condition works without `const gizmo = transformGizmo` since TypeScript narrows function parameters in `if` blocks (no closure re-assignment risk)
+- 150 non-comment line limit can catch subtle count issues; combining two nested `if` blocks into a single `&&` condition saves 2 non-comment lines
+- After `renderer.sync(state)`, all meshes are replaced — gizmo re-attach and selection-outline re-apply are both needed to restore interactive state
+---
