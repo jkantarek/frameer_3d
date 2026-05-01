@@ -10,6 +10,21 @@ Started: 2026-04-29 08:49:01
 - `src/elements/` is the new domain; `index.ts` is the public API entry point
 
 ---
+## Iteration 9 - 2026-05-01T06:16:35
+**User Story**: Phase 19 (P019) — Bug Fix: Remove Opaque Sidebar Styles from #elements-panel
+**Tasks Completed**: 
+- [x] P019F001T001: In `src/style.css`, removed `background`, `border-right`, `bottom`, and `width` from `#elements-panel`; kept `position`, `left`, `top`, `z-index`, `pointer-events`
+**Tasks Remaining in Story**: None — story complete
+**Commit**: 30eb29e
+**Files Changed**: 
+- src/style.css
+- specs/002-elements-floating-panel/tasks.md
+**Learnings**:
+- P019 is CSS-only (no TDD cycle); only typecheck + lint + format:check + pnpm test required (no coverage gate)
+- After removing sidebar styles, Tweakpane pane floats over the canvas with its own compact background
+---
+
+---
 
 ## Iteration 1 - 2026-04-29T08:49:05
 **User Story**: Phase 1 (P001) — Setup dependencies, CSS overlay, domain scaffold

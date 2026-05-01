@@ -16,7 +16,7 @@ function coerce(value: string, type: AttributeType): CoercedValue {
 
 function bindOpts(type: AttributeType): Record<string, unknown> {
   if (type === 'number') return { step: 0.01 };
-  if (type === 'color') return { view: 'color' };
+  if (type === 'color') return { view: 'text' };
   return {};
 }
 

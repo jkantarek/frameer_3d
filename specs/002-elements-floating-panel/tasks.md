@@ -670,8 +670,8 @@ Additional ESLint-enforced constraints:
 
 ### P020F001 — Remove forced `{ view: 'color' }` from `bindOpts`
 
-- [ ] P020F001T001 In `src/elements/ElementControls.test.ts`, add a new `it` block: bind an element whose `parametric_attributes` includes `{ attribute_uri_key: 'material.color', attribute_type: 'color', attribute_value: '#888888' }`; obtain the Tweakpane folder; find the color input via `folder.element.querySelector('input')`; mutate its value to `'#ff0000'` and dispatch a `change` event (`bubbles: true`); assert that the `onChange` spy was called and the updated element's `attribute_value` for `material.color` starts with `'#'` — this test MUST FAIL before T002 (currently `String(ev.value)` returns `"[object Object]"` when `{ view: 'color' }` is active)
-- [ ] P020F001T002 In `src/elements/ElementControls.ts`, update `bindOpts`: remove the `if (type === 'color') return { view: 'color' };` branch — the function should return `{ step: 0.01 }` for `'number'` and `{}` for all other attribute types; Tweakpane v4 auto-detects `#rrggbb` strings and returns a hex string from `onChange`
+- [x] P020F001T001 In `src/elements/ElementControls.test.ts`, add a new `it` block: bind an element whose `parametric_attributes` includes `{ attribute_uri_key: 'material.color', attribute_type: 'color', attribute_value: '#888888' }`; obtain the Tweakpane folder; find the color input via `folder.element.querySelector('input')`; mutate its value to `'#ff0000'` and dispatch a `change` event (`bubbles: true`); assert that the `onChange` spy was called and the updated element's `attribute_value` for `material.color` starts with `'#'` — this test MUST FAIL before T002 (currently `String(ev.value)` returns `"[object Object]"` when `{ view: 'color' }` is active)
+- [x] P020F001T002 In `src/elements/ElementControls.ts`, update `bindOpts`: remove the `if (type === 'color') return { view: 'color' };` branch — the function should return `{ step: 0.01 }` for `'number'` and `{}` for all other attribute types; Tweakpane v4 auto-detects `#rrggbb` strings and returns a hex string from `onChange`
 
 ### Exit Criteria: Phase 20
 
