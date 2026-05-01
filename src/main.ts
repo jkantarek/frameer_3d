@@ -27,6 +27,10 @@ export function main(): void {
   const sceneManager = viewport.getSceneManager();
   sceneManager.setBackground(settings.theme === 'light' ? '#e8e8ec' : '#1a1a2e');
   sceneManager.addObject('axes', new THREE.AxesHelper(2));
+  sceneManager.addObject('ambient', new THREE.AmbientLight(0xffffff, 0.6));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  dirLight.position.set(5, 10, 7.5);
+  sceneManager.addObject('dir-light', dirLight);
 
   const controlPane = createControlPane(controlsContainer, layoutState);
   const elementFolder = controlPane.addFolder('Element');

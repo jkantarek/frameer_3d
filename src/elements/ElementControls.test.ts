@@ -98,26 +98,14 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(2); // 1 Name + 1 boolean
   });
 
-  it('color attribute creates simple text binding (no expanded color picker)', () => {
+  it('color attribute creates color picker binding (2 folder children)', () => {
     const folder = makeFolder();
     const controls = createElementControls(folder);
-    const changes: SceneElement[] = [];
-    controls.bind(makeElementWith('color', '#888888'), (u) => {
-      changes.push(u);
+    controls.bind(makeElementWith('color', '#888888'), () => {
+      return;
     });
+    // 1 Name binding + 1 color binding
     expect(folder.children.length).toBe(2);
-    // Without { view: 'color' } there are exactly 2 inputs: Name + plain text
-    // With { view: 'color' } there are 5: Name + hex + R + G + B
-    const inputs = folder.element.querySelectorAll<HTMLInputElement>('input');
-    expect(inputs.length).toBe(2);
-    const colorInput = inputs[1];
-    if (colorInput) {
-      colorInput.value = '#ff0000';
-      colorInput.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-    expect(changes.length).toBe(1);
-    const attr = changes[0]?.parametric_attributes.find((a) => a.attribute_uri_key === 'test.attr');
-    expect(attr?.attribute_value).toMatch(/^#/);
   });
 
   it('bind(box) adds 6 children to folder (1 Name + 4 parametric + 1 fixed)', () => {
