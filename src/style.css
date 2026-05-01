@@ -32,12 +32,8 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  bottom: 0;
-  width: 220px;
   z-index: 10;
   pointer-events: none;
-  background: var(--panel-bg);
-  border-right: 1px solid var(--panel-border);
 }
 
 #elements-panel > * {

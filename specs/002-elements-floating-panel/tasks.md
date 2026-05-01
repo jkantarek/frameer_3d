@@ -1,9 +1,9 @@
 # Tasks: Elements Floating Panel — UI Improvements
 
 **Feature**: `002-elements-floating-panel`
-**Date**: 2026-04-30 (updated with new phases P008–P018)
+**Date**: 2026-04-30 (updated 2026-05-01 with bug-fix phases P019–P021)
 **Plan**: [plan.md](plan.md) | **Spec**: [spec.md](spec.md)
-**Completed**: P001–P008 (original feature + Tweakpane panel migration) | **Remaining**: P009–P018
+**Completed**: P001–P018 (full feature implemented) | **Remaining**: P019–P021 (bug fixes)
 
 **TDD Policy**: TDD operates at the **task level**, not the feature layer. Each `F###` group is one logical concern. Within that group: `T001` writes the test (🔴 RED — must fail), `T002` implements it (🟢 GREEN — makes it pass), `T003` refactors (🔵 BLUE — optional). Complete one full RED→GREEN→BLUE cycle before opening the next `F###`. This prevents over-building.
 
@@ -635,3 +635,110 @@ Gaps found and resolved before writing this task list:
 | `[P]` marker on P009F001T002 + P010F001T002 (same-phase concern) | Neither marked `[P]` — both have single-phase sequential concern within their own phase |
 
 | 4-step store-mutation coordination | Inline sequence (`newState = mutate(...)` → `save` → `renderer.sync` → `renderList`) described identically in P005F003T002 and P006F002T002 — same file, same 4 steps | **Introduced `commit(newState)` private closure helper** in P005F003T002; P006F002T002 calls `commit(updateElement(...))`. Eliminates ~10 duplicated lines in `ElementPanel.ts`, maintaining comfortable headroom under the 150-line limit across both phases. |
+
+---
+
+## Phase 19 (P019): Bug Fix — Elements Panel CSS: Remove Solid Sidebar
+
+**Goal**: The `#elements-panel` div currently renders as a full-height opaque sidebar (dark `background`, `border-right`, `bottom: 0`, `width: 220px`). This blocks the 3D viewport on the left side, reducing usable viewport space. The fix removes all sidebar-styling properties so only the Tweakpane pane itself is visible, floating over the canvas. As a side-effect the `#elements-panel` no longer has a hard-coded width, so the Tweakpane pane inside uses its natural width — matching the `SystemPanel` Tweakpane width in the bottom-left corner and resolving the visual width mismatch between the two panels.
+
+**Independent test criteria**: No logic changes — visual CSS fix only. Verify with `pnpm typecheck`, `pnpm lint`, and `pnpm format:check`.
+
+### P019F001 — Remove opaque sidebar styles from `#elements-panel`
+
+- [x] P019F001T001 In `src/style.css`, update the `#elements-panel` rule: remove `background: var(--panel-bg)`, `border-right: 1px solid var(--panel-border)`, `bottom: 0`, and `width: 220px`; keep `position: absolute`, `left: 0`, `top: 0`, `z-index: 10`, `pointer-events: none`, and the `#elements-panel > *` pointer-events rule unchanged — the Tweakpane pane will float over the canvas with its own compact background
+
+### Exit Criteria: Phase 19
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass — no coverage regression |
+
+Additional ESLint-enforced constraints:
+- No source logic changed; `max-lines` and JSDoc rules unaffected
+
+---
+
+## Phase 20 (P020): Bug Fix — Color Attribute Value Not Applied to Mesh
+
+**Goal**: `ElementControls.bindOpts('color')` returns `{ view: 'color' }`. In Tweakpane v4, when `{ view: 'color' }` is explicitly specified on a CSS-hex-string binding, `ev.value` from the `onChange` callback is an internal `IntColor` object rather than a plain hex string. `String(ev.value)` then returns `"[object Object]"`, which Three.js cannot parse — the mesh color stays at the default. The project research (R8) explicitly states: _"CSS hex string auto-detected by Tweakpane v4; no `{ view: 'color' }` needed"_. Removing the explicit `{ view: 'color' }` from `bindOpts` lets auto-detection run, guaranteeing `ev.value` is a plain `#rrggbb` string that both the store and Three.js accept.
+
+**Independent test criteria**: After the fix, changing a color attribute binding's input fires `onChange` with an element whose matching `attribute_value` starts with `'#'` and has length 7 (standard hex).
+
+### P020F001 — Remove forced `{ view: 'color' }` from `bindOpts`
+
+- [ ] P020F001T001 In `src/elements/ElementControls.test.ts`, add a new `it` block: bind an element whose `parametric_attributes` includes `{ attribute_uri_key: 'material.color', attribute_type: 'color', attribute_value: '#888888' }`; obtain the Tweakpane folder; find the color input via `folder.element.querySelector('input')`; mutate its value to `'#ff0000'` and dispatch a `change` event (`bubbles: true`); assert that the `onChange` spy was called and the updated element's `attribute_value` for `material.color` starts with `'#'` — this test MUST FAIL before T002 (currently `String(ev.value)` returns `"[object Object]"` when `{ view: 'color' }` is active)
+- [ ] P020F001T002 In `src/elements/ElementControls.ts`, update `bindOpts`: remove the `if (type === 'color') return { view: 'color' };` branch — the function should return `{ step: 0.01 }` for `'number'` and `{}` for all other attribute types; Tweakpane v4 auto-detects `#rrggbb` strings and returns a hex string from `onChange`
+
+### Exit Criteria: Phase 20
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+Additional ESLint-enforced constraints:
+- All new test code in `ElementControls.test.ts` ≤ 150 non-comment lines total
+- No `@ts-ignore` / `@ts-expect-error` without adjacent `@example` doctest
+
+---
+
+## Phase 21 (P021): Bug Fix — TransformGizmo Loses Attachment After renderer.sync
+
+**Goal**: `renderer.sync(state)` replaces every scene mesh (`sceneManager.addObject` removes the old `Object3D` and adds a fresh one). After `commit()` or `onDragEnd` call `renderer.sync`, the `TransformGizmo` is still attached to the **old** (removed) mesh. Because the old mesh no longer has world-space visibility, TransformControls' raycasting against gizmo handles always misses — the user's next pointer-down is captured by `OrbitControls` instead, rotating the viewport. The selection outline is also lost. Fix: after every `renderer.sync(state)` call in both `commit` and the `onDragEnd` handler, re-attach the gizmo and re-apply the selection highlight when `selectedId !== undefined`.
+
+**Independent test criteria**: After a `commit(updateElement(...))` or an `onDragEnd` event, `stub.attach` is called a second time (once on initial select, once after sync), and `renderer.setSelected` is called again.
+
+### P021F001 — Re-attach gizmo + selection after `commit`
+
+- [ ] P021F001T001 In `src/elements/ElementPanel.gizmo.test.ts`, add a new `it` block: select an element (triggering the first `stub.attach`); then invoke the `onChange` callback that `controls.bind` registered (simulate a dimension change to trigger `commit(updateElement(...))`); assert that `stub.attach` has now been called **twice** and that `stub.attachCallCount === 2` — this test MUST FAIL before T002 (current `commit` does not re-attach the gizmo)
+- [ ] P021F001T002 In `src/elements/ElementPanel.ts`, update the `commit(newState: ElementStoreData)` closure: after `renderer.sync(state)`, add a guard block — `if (selectedId !== undefined) { const mesh = sceneManager.getObject(selectedId); if (mesh !== undefined) { gizmo.attach(mesh); renderer.setSelected(selectedId); } }` where `gizmo` is a non-optional reference extracted at the top of the outer function (use `if (transformGizmo !== undefined) { const gizmo = transformGizmo; ... }` to avoid repeated optional-chain usage inside closures and satisfy TypeScript strict null-checks)
+
+### P021F002 — Re-attach gizmo + selection after `onDragEnd`
+
+- [ ] P021F002T001 In `src/elements/ElementPanel.gizmo.test.ts`, add a new `it` block: select an element; record the initial `stub.attachCallCount`; fire the `onDragEnd` trigger exposed by the `TransformGizmoStub`; assert that `stub.attachCallCount` has incremented by 1 and `renderer.setSelected` was called — this test MUST FAIL before T002 (current `onDragEnd` handler calls only `renderer.sync`)
+- [ ] P021F002T002 In `src/elements/ElementPanel.ts`, update the `transformGizmo?.onDragEnd(...)` handler (or equivalently, the `if (transformGizmo !== undefined)` block from P021F001T002): after `renderer.sync(state)`, add the same re-attach guard — `if (selectedId !== undefined) { const mesh = sceneManager.getObject(selectedId); if (mesh !== undefined) { gizmo.attach(mesh); renderer.setSelected(selectedId); } }`
+
+### Exit Criteria: Phase 21
+
+| Gate | Command | Required |
+|------|---------|----------|
+| TypeScript | `pnpm typecheck` | Zero errors |
+| Lint | `pnpm lint` | Zero warnings (`--max-warnings 0`) |
+| Format | `pnpm format:check` | All files pass |
+| Tests + Doctests | `pnpm test` | All pass |
+| Coverage | `pnpm test:coverage` | ≥98% lines / functions / branches / statements |
+
+Additional ESLint-enforced constraints:
+- `ElementPanel.ts` must stay ≤ 150 non-comment lines after the fix (verify with `pnpm lint`)
+- No `@ts-ignore` / `@ts-expect-error` without adjacent `@example` doctest
+- No unused locals or parameters in added guard blocks
+
+---
+
+## Bug-Fix Dependency Graph (P019–P021)
+
+| Phase | Bug fixed | Key artifact | Blocks |
+|-------|-----------|-------------|--------|
+| P019 | Panel renders as opaque sidebar | `src/style.css` | — |
+| P020 | Color `ev.value` is `[object Object]` | `src/elements/ElementControls.ts` | — |
+| P021 | Gizmo loses mesh after `renderer.sync` | `src/elements/ElementPanel.ts` | — |
+
+P019, P020, and P021 are fully independent — they touch different files and can be executed in any order or in parallel.
+
+### Composability Pass (P019–P021)
+
+| Gap type | Check | Result |
+|----------|-------|--------|
+| CSS variable not read | P019 removes properties — no new CSS variables introduced | No gap |
+| DOM element never created | No new DOM elements | No gap |
+| Method tested too late | P021 tests `stub.attach` count; `TransformGizmoStub.attach` already exists in `ElementPanel.gizmo.test.ts` | No gap |
+| Return value not tested | `sceneManager.getObject(selectedId)` already tested in `SceneManager.test.ts` | No gap |
+| CSS visual collapse | P019 removes the opaque background; Tweakpane pane retains its own panel background | No gap |
+| `[P]` marker | No tasks marked `[P]` — each F-group pair (T001→T002) is sequential within its own phase | No gap |
