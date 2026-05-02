@@ -91,6 +91,18 @@ export function createSystemPanel(
     callbacks?.onNewProject?.();
   });
 
+  for (const p of projectRegistry.projects) {
+    const btn = projectsFolder.addButton({ title: p.name });
+    if (p.id === activeProjectId) {
+      const btnEl = btn.element.querySelector('button');
+      /* v8 ignore next */
+      btnEl?.setAttribute('aria-current', 'true');
+    }
+    btn.on('click', () => {
+      callbacks?.onSelectProject?.(p.id);
+    });
+  }
+
   return {
     dispose(): void {
       removeMediaListener();

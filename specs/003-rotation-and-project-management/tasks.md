@@ -191,12 +191,12 @@ Given a `ProjectRegistry` with 2 entries, `createSystemPanel` renders 2 navigati
 
 ### P005F001 — SystemPanel per-project navigation buttons
 
-- [ ] P005F001T001 Add assertions to `src/system/SystemPanel.test.ts`: given a `projectRegistry` with 2 `ProjectSummary` entries, the Projects folder renders 2 named buttons; clicking a button calls `onSelectProject(id)` with the correct project ID; the currently active project's button is visually distinguishable (e.g., bold label or `aria-current="true"`) — `pnpm test` must **FAIL** (RED: no per-project buttons yet)
-- [ ] P005F001T002 Add per-project navigation buttons inside the "Projects" folder in `src/system/SystemPanel.ts`: iterate `projectRegistry.projects`, add a Tweakpane button per project using the project name as label, on click call `callbacks?.onSelectProject?.(project.id)`; mark the active project (matching `activeProjectId`) with `aria-current="true"` on the button element — run `pnpm test` (GREEN)
+- [x] P005F001T001 Add assertions to `src/system/SystemPanel.test.ts`: given a `projectRegistry` with 2 `ProjectSummary` entries, the Projects folder renders 2 named buttons; clicking a button calls `onSelectProject(id)` with the correct project ID; the currently active project's button is visually distinguishable (e.g., bold label or `aria-current="true"`) — `pnpm test` must **FAIL** (RED: no per-project buttons yet)
+- [x] P005F001T002 Add per-project navigation buttons inside the "Projects" folder in `src/system/SystemPanel.ts`: iterate `projectRegistry.projects`, add a Tweakpane button per project using the project name as label, on click call `callbacks?.onSelectProject?.(project.id)`; mark the active project (matching `activeProjectId`) with `aria-current="true"` on the button element — run `pnpm test` (GREEN)
 
 ### P005F002 — main.ts onSelectProject handler
 
-- [ ] P005F002T001 Update the `onSelectProject` callback in `src/main.ts` (wired in P004F004T001) to: call `setActiveProjectId(id)` then `location.reload()`; verify with `pnpm typecheck && pnpm test`
+- [x] P005F002T001 Update the `onSelectProject` callback in `src/main.ts` (wired in P004F004T001) to: call `setActiveProjectId(id)` then `location.reload()`; verify with `pnpm typecheck && pnpm test`
 
 ### Exit Criteria: Phase 5 (User Story 4)
 
