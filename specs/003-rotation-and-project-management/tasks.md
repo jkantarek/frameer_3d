@@ -48,22 +48,22 @@
 
 ### P002F001 — ProjectTypes (pure type definitions)
 
-- [ ] P002F001T001 [P] Write an inline doctest in the (not-yet-created) `src/project/ProjectTypes.ts` file asserting that a `ProjectSummary`, `Project`, and `ProjectRegistry` object can each be constructed with correct field shapes — file does not exist yet, so `pnpm test` **FAILS** (RED)
-- [ ] P002F001T002 [P] Create `src/project/ProjectTypes.ts` with `ProjectSummary`, `Project` (extends `ProjectSummary`, adds `readonly elements: readonly SceneElement[]`), and `ProjectRegistry` (`readonly projects: readonly ProjectSummary[]`) interfaces as specified in `data-model.md` §2 — run `pnpm test` to confirm doctest passes (GREEN)
+- [x] P002F001T001 [P] Write an inline doctest in the (not-yet-created) `src/project/ProjectTypes.ts` file asserting that a `ProjectSummary`, `Project`, and `ProjectRegistry` object can each be constructed with correct field shapes — file does not exist yet, so `pnpm test` **FAILS** (RED)
+- [x] P002F001T002 [P] Create `src/project/ProjectTypes.ts` with `ProjectSummary`, `Project` (extends `ProjectSummary`, adds `readonly elements: readonly SceneElement[]`), and `ProjectRegistry` (`readonly projects: readonly ProjectSummary[]`) interfaces as specified in `data-model.md` §2 — run `pnpm test` to confirm doctest passes (GREEN)
 
 ### P002F002 — ProjectStore (localStorage CRUD with injectable storage)
 
-- [ ] P002F002T001 [P] Write `src/project/ProjectStore.test.ts` with black-box unit tests for all 6 public functions using an injectable fake `Storage` object: `loadRegistry` (returns `{ projects: [] }` on missing key; returns `{ projects: [] }` + emits `console.warn` on corrupt JSON), `saveRegistry` (writes correct key), `loadProject` (returns `undefined` on missing; returns `{ ...project, elements: [] }` when stored elements lack `rotation_attributes`), `saveProject` (upserts summary in registry), `createProject` (produces a ULID id, default name `'Untitled Project'`, empty `elements`, valid `created_at`/`updated_at`), `deleteProject` (removes from registry and deletes project key) — `pnpm test` must **FAIL** (RED)
-- [ ] P002F002T002 [P] Create `src/project/ProjectStore.ts` implementing all 6 functions with `storage: Storage = localStorage` default parameter; all reads use strict type guards; corrupt data returns sane empty default + `console.warn`; `saveProject` normalises `rotation_attributes: []` on any element missing the field (defensive read path per data-model.md migration note) — run `pnpm test` (GREEN)
+- [x] P002F002T001 [P] Write `src/project/ProjectStore.test.ts` with black-box unit tests for all 6 public functions using an injectable fake `Storage` object: `loadRegistry` (returns `{ projects: [] }` on missing key; returns `{ projects: [] }` + emits `console.warn` on corrupt JSON), `saveRegistry` (writes correct key), `loadProject` (returns `undefined` on missing; returns `{ ...project, elements: [] }` when stored elements lack `rotation_attributes`), `saveProject` (upserts summary in registry), `createProject` (produces a ULID id, default name `'Untitled Project'`, empty `elements`, valid `created_at`/`updated_at`), `deleteProject` (removes from registry and deletes project key) — `pnpm test` must **FAIL** (RED)
+- [x] P002F002T002 [P] Create `src/project/ProjectStore.ts` implementing all 6 functions with `storage: Storage = localStorage` default parameter; all reads use strict type guards; corrupt data returns sane empty default + `console.warn`; `saveProject` normalises `rotation_attributes: []` on any element missing the field (defensive read path per data-model.md migration note) — run `pnpm test` (GREEN)
 
 ### P002F003 — ProjectRouter (URL ↔ project ID via injectable location/history)
 
-- [ ] P002F003T001 [P] Write `src/project/ProjectRouter.test.ts` with unit tests for `getActiveProjectId` (returns the `project` query param value when present, `undefined` when absent or blank), `setActiveProjectId` (calls `replaceState` with correct `?project=<id>` URL — use an injectable `history` object passed as optional parameter), `clearActiveProjectId` (removes the param) — `pnpm test` must **FAIL** (RED)
-- [ ] P002F003T002 [P] Create `src/project/ProjectRouter.ts` implementing `getActiveProjectId(location?: Location)`, `setActiveProjectId(id: string, history?: History)`, and `clearActiveProjectId(history?: History)` with injected-default parameters (`window.location` / `window.history`) for testability without mocks; use `URLSearchParams` and `history.replaceState` — run `pnpm test` (GREEN)
+- [x] P002F003T001 [P] Write `src/project/ProjectRouter.test.ts` with unit tests for `getActiveProjectId` (returns the `project` query param value when present, `undefined` when absent or blank), `setActiveProjectId` (calls `replaceState` with correct `?project=<id>` URL — use an injectable `history` object passed as optional parameter), `clearActiveProjectId` (removes the param) — `pnpm test` must **FAIL** (RED)
+- [x] P002F003T002 [P] Create `src/project/ProjectRouter.ts` implementing `getActiveProjectId(location?: Location)`, `setActiveProjectId(id: string, history?: History)`, and `clearActiveProjectId(history?: History)` with injected-default parameters (`window.location` / `window.history`) for testability without mocks; use `URLSearchParams` and `history.replaceState` — run `pnpm test` (GREEN)
 
 ### P002F004 — project domain index
 
-- [ ] P002F004T001 Create `src/project/index.ts` re-exporting all public symbols from `ProjectTypes`, `ProjectStore`, and `ProjectRouter` (ProjectBootstrap will be added in P004)
+- [x] P002F004T001 Create `src/project/index.ts` re-exporting all public symbols from `ProjectTypes`, `ProjectStore`, and `ProjectRouter` (ProjectBootstrap will be added in P004)
 
 ### Exit Criteria: Phase 2
 
