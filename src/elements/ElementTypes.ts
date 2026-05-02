@@ -26,6 +26,7 @@ export interface SceneElement {
   readonly parametric_attributes: readonly ParametricAttribute[];
   readonly fixed_attributes: readonly FixedAttribute[];
   readonly origin_attributes: readonly OriginAttribute[];
+  readonly rotation_attributes: readonly OriginAttribute[];
   readonly child_elements: readonly SceneElement[];
 }
 

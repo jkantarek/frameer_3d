@@ -9,6 +9,14 @@ function originAttrs(): readonly OriginAttribute[] {
   ];
 }
 
+function rotationAttrs(): readonly OriginAttribute[] {
+  return [
+    { id: ulid(), dimension_uri_key: 'rotation.x', dimension_uri_value: 0 },
+    { id: ulid(), dimension_uri_key: 'rotation.y', dimension_uri_value: 0 },
+    { id: ulid(), dimension_uri_key: 'rotation.z', dimension_uri_value: 0 },
+  ];
+}
+
 function colorAttr(): ParametricAttribute {
   return {
     id: ulid(),
@@ -40,6 +48,10 @@ function numAttr(key: string, value: string): ParametricAttribute {
  * expect(el.origin_attributes.find(a => a.dimension_uri_key === 'position.x')?.dimension_uri_value).toBe(0);
  * expect(el.origin_attributes.find(a => a.dimension_uri_key === 'position.y')?.dimension_uri_value).toBe(0);
  * expect(el.origin_attributes.find(a => a.dimension_uri_key === 'position.z')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.x')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.y')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.z')?.dimension_uri_value).toBe(0);
  * expect(createBox('Custom').label).toBe('Custom');
  * ```
  */
@@ -56,6 +68,7 @@ export function createBox(label?: string): SceneElement {
     ],
     fixed_attributes: [{ id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'box' }],
     origin_attributes: originAttrs(),
+    rotation_attributes: rotationAttrs(),
     child_elements: [],
   };
 }
@@ -86,6 +99,7 @@ export function createSphere(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'sphere' },
     ],
     origin_attributes: originAttrs(),
+    rotation_attributes: [],
     child_elements: [],
   };
 }
@@ -121,6 +135,7 @@ export function createCylinder(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'cylinder' },
     ],
     origin_attributes: originAttrs(),
+    rotation_attributes: [],
     child_elements: [],
   };
 }
@@ -156,6 +171,7 @@ export function createPlane(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'plane' },
     ],
     origin_attributes: originAttrs(),
+    rotation_attributes: [],
     child_elements: [],
   };
 }

@@ -15,6 +15,7 @@ function makeElementWith(type: 'boolean' | 'color', value: string): SceneElement
     label: 'Test',
     description: '',
     origin_attributes: [],
+    rotation_attributes: [],
     parametric_attributes: [
       {
         id: 'a1',
