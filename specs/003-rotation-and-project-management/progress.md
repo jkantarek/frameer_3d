@@ -81,3 +81,28 @@ Started: 2026-05-02 08:29:53
 - Extracting to a new module (ElementPanelSync.ts) resolves the 150-line file limit and improves testability via the public `applyObjTransform` API.
 - Inline doctest covers the unknown-key fallback branch (`return a`) without `/* v8 ignore */` by passing an attribute with key `'unknown'`.
 ---
+## Iteration 4 - 2026-05-02T09:30:00-05:00
+**User Story**: P003F004–F006 — GizmoToolbar, ElementControls position/rotation folders, CSS+main wiring
+**Tasks Completed**: 
+- [x] P003F004T001: Write GizmoToolbar.test.ts (RED confirmed)
+- [x] P003F004T002: Create GizmoToolbar.ts — 3-button viewport overlay toolbar (GREEN)
+- [x] P003F005T001: Update ElementControls.test.ts (6→8 children) + new ElementControls.folder.test.ts (RED confirmed)
+- [x] P003F005T002: Add Position/Rotation sub-folders to ElementControls.ts (GREEN)
+- [x] P003F006T001: Verified position:relative on #viewport-container in style.css
+- [x] P003F006T002: Wired createGizmoToolbar in main.ts (GREEN)
+**Tasks Remaining in Story**: None — Phase 3 (User Story 1) complete
+**Files Changed**: 
+- src/scene/GizmoToolbar.ts (new)
+- src/scene/GizmoToolbar.test.ts (new)
+- src/elements/ElementControls.ts (position/rotation folders)
+- src/elements/ElementControls.test.ts (6→8 child count assertions)
+- src/elements/ElementControls.folder.test.ts (new)
+- src/main.ts (createGizmoToolbar wiring)
+- eslint.config.mjs (GizmoToolbar exception for no-raw-html)
+- specs/003-rotation-and-project-management/tasks.md
+**Learnings**:
+- GizmoToolbar is a raw DOM viewport overlay (not Tweakpane) — add it to the no-raw-html exception list in eslint.config.mjs alongside ElementPanel.ts.
+- Unnecessary type assertions (`proxy as Record<string, number>` when proxy is already that type) trigger @typescript-eslint/no-unnecessary-type-assertion — drop the cast.
+- Use makeSimpleEl() (no parametric/fixed attrs) in folder tests for deterministic input indices via querySelectorAll('input.tp-txtv_i').
+- Conditional folder creation (if origin_attributes.length > 0) keeps the child-count test for empty-attrs elements unchanged.
+---

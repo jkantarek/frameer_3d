@@ -117,6 +117,7 @@ export default tseslint.config(
       'src/**/*.{test,spec}.{ts,tsx}',
       'src/elements/ElementPanel.ts',
       'src/elements/ElementPanelList.ts',
+      'src/scene/GizmoToolbar.ts',
     ],
     plugins: { local: localPlugin },
     rules: { 'local/no-raw-html': 'off' },

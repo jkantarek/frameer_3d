@@ -7,6 +7,7 @@ import { loadOcct } from './occt/OccKernel.js';
 import { createElementPanel } from './elements/index.js';
 import { applyTheme, loadSettings } from './system/SystemSettings.js';
 import { createSystemPanel } from './system/SystemPanel.js';
+import { createGizmoToolbar } from './scene/GizmoToolbar.js';
 
 export function main(): void {
   const settings = loadSettings();
@@ -41,6 +42,8 @@ export function main(): void {
   }
 
   createElementPanel(viewportContainer, sceneManager, elementFolder, viewport.getTransformGizmo());
+
+  createGizmoToolbar(viewportContainer, viewport.getTransformGizmo());
 
   createSystemPanel(settings, (theme) => {
     sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e');
