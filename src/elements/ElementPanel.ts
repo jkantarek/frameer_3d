@@ -90,6 +90,12 @@ export function createElementPanel(
           gizmo.attach(mesh);
           renderer.setSelected(selectedId);
         }
+        const updatedEl = state.elements.find((el) => el.id === selectedId);
+        if (updatedEl !== undefined) {
+          controls.bind(updatedEl, (updated) => {
+            commit(updateElement(state, updated));
+          });
+        }
       }
     });
   }
