@@ -63,6 +63,46 @@ export function createElementControls(folder: FolderApi): ElementControlsApi {
         { readonly: true },
       );
     }
+    if (element.origin_attributes.length > 0) {
+      const positionFolder = folder.addFolder({ title: 'Position' });
+      for (const attr of element.origin_attributes) {
+        const proxy: Record<string, number> = {
+          [attr.dimension_uri_key]: attr.dimension_uri_value,
+        };
+        positionFolder
+          .addBinding(proxy, attr.dimension_uri_key, { step: 0.01 })
+          .on('change', (ev) => {
+            const updated: SceneElement = {
+              ...current,
+              origin_attributes: current.origin_attributes.map((a) =>
+                a.id === attr.id ? { ...a, dimension_uri_value: ev.value } : a,
+              ),
+            };
+            current = updated;
+            onChange(updated);
+          });
+      }
+    }
+    if (element.rotation_attributes.length > 0) {
+      const rotationFolder = folder.addFolder({ title: 'Rotation' });
+      for (const attr of element.rotation_attributes) {
+        const proxy: Record<string, number> = {
+          [attr.dimension_uri_key]: attr.dimension_uri_value,
+        };
+        rotationFolder
+          .addBinding(proxy, attr.dimension_uri_key, { step: 0.01 })
+          .on('change', (ev) => {
+            const updated: SceneElement = {
+              ...current,
+              rotation_attributes: current.rotation_attributes.map((a) =>
+                a.id === attr.id ? { ...a, dimension_uri_value: ev.value } : a,
+              ),
+            };
+            current = updated;
+            onChange(updated);
+          });
+      }
+    }
   }
 
   return { bind, clear };

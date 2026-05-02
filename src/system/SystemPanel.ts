@@ -1,6 +1,14 @@
 import { Pane } from 'tweakpane';
 import { saveSettings, applyTheme, detectSystemTheme } from './SystemSettings.js';
 import type { SystemSettingsData, ThemeValue } from './SystemSettings.js';
+import type { ProjectRegistry } from '../project/ProjectTypes.js';
+
+export interface SystemPanelCallbacks {
+  onThemeChange?: (theme: ThemeValue) => void;
+  onNewProject?: () => void;
+  onSelectProject?: (id: string) => void;
+  onRenameProject?: (id: string, name: string) => void;
+}
 
 export interface SystemPanelApi {
   dispose(): void;
@@ -8,7 +16,9 @@ export interface SystemPanelApi {
 
 export function createSystemPanel(
   initialSettings: SystemSettingsData,
-  onThemeChange?: (theme: ThemeValue) => void,
+  projectRegistry: ProjectRegistry,
+  activeProjectId: string,
+  callbacks?: SystemPanelCallbacks,
   _container?: HTMLElement,
 ): SystemPanelApi {
   const pane = new Pane({ container: _container ?? document.body, title: 'System' });
@@ -26,7 +36,7 @@ export function createSystemPanel(
   function applyAndNotify(): void {
     saveSettings(data);
     applyTheme(data);
-    onThemeChange?.(data.theme);
+    callbacks?.onThemeChange?.(data.theme);
   }
 
   function removeMediaListener(): void {
@@ -70,6 +80,28 @@ export function createSystemPanel(
     /* v8 ignore stop */
     applyAndNotify();
   });
+
+  const projectsFolder = pane.addFolder({ title: 'Projects' });
+  const activeProject = projectRegistry.projects.find((p) => p.id === activeProjectId);
+  const nameProxy = { name: activeProject?.name ?? '' };
+  projectsFolder.addBinding(nameProxy, 'name', { label: 'Name' }).on('change', (ev) => {
+    callbacks?.onRenameProject?.(activeProjectId, ev.value);
+  });
+  projectsFolder.addButton({ title: 'New Project' }).on('click', () => {
+    callbacks?.onNewProject?.();
+  });
+
+  for (const p of projectRegistry.projects) {
+    const btn = projectsFolder.addButton({ title: p.name });
+    if (p.id === activeProjectId) {
+      const btnEl = btn.element.querySelector('button');
+      /* v8 ignore next */
+      btnEl?.setAttribute('aria-current', 'true');
+    }
+    btn.on('click', () => {
+      callbacks?.onSelectProject?.(p.id);
+    });
+  }
 
   return {
     dispose(): void {

@@ -3,21 +3,30 @@ import { Pane } from 'tweakpane';
 import type { SceneManager } from '../scene/SceneManager.js';
 import type { TransformGizmoApi } from '../scene/TransformGizmo.js';
 import type { ElementStoreData, SceneElement } from './ElementTypes.js';
-import { load, save, addElement, removeElement, updateElement } from './ElementStore.js';
+import { addElement, removeElement, updateElement } from './ElementStore.js';
+import type { Project } from '../project/ProjectTypes.js';
+import { loadProject, saveProject } from '../project/index.js';
 import { createElementRenderer } from './ElementRenderer.js';
 import { createElementControls } from './ElementControls.js';
 import { createBox, createSphere, createCylinder, createPlane } from './PrimitiveFactory.js';
 import { renderList } from './ElementPanelList.js';
+import { applyObjTransform } from './ElementPanelSync.js';
 
 export interface ElementPanelApi {
   getElement(): HTMLElement;
   dispose(): void;
 }
 
+function makeDefaultProject(id: string): Project {
+  const now = new Date().toISOString();
+  return { id, name: 'Untitled Project', created_at: now, updated_at: now, elements: [] };
+}
+
 export function createElementPanel(
   container: HTMLElement,
   sceneManager: SceneManager,
   controlFolder: FolderApi,
+  projectId: string,
   transformGizmo?: TransformGizmoApi,
 ): ElementPanelApi {
   const panel = document.createElement('div');
@@ -27,7 +36,8 @@ export function createElementPanel(
   const listPane = new Pane({ container: panel, title: 'Elements' });
   const renderer = createElementRenderer(sceneManager);
   const controls = createElementControls(controlFolder);
-  let state = load();
+  const project = loadProject(projectId) ?? makeDefaultProject(projectId);
+  let state: ElementStoreData = { elements: project.elements };
   let selectedId: string | undefined;
   renderer.sync(state);
 
@@ -38,10 +48,7 @@ export function createElementPanel(
     controls.clear();
     renderer.setSelected(undefined);
     transformGizmo?.detach();
-    state = removeElement(state, id);
-    save(state);
-    renderer.sync(state);
-    renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
+    commit(removeElement(state, id));
   }
 
   function onSelect(element: SceneElement): void {
@@ -70,23 +77,10 @@ export function createElementPanel(
         /* v8 ignore start */
         if (obj === undefined) return el;
         /* v8 ignore stop */
-        return {
-          ...el,
-          origin_attributes: el.origin_attributes.map((a) => {
-            if (a.dimension_uri_key === 'position.x')
-              return { ...a, dimension_uri_value: obj.position.x };
-            if (a.dimension_uri_key === 'position.y')
-              return { ...a, dimension_uri_value: obj.position.y };
-            /* v8 ignore start */
-            if (a.dimension_uri_key === 'position.z')
-              return { ...a, dimension_uri_value: obj.position.z };
-            return a;
-            /* v8 ignore stop */
-          }),
-        };
+        return applyObjTransform(el, obj);
       });
       state = { elements: newElements };
-      save(state);
+      saveProject({ ...project, elements: state.elements, updated_at: new Date().toISOString() });
     });
     gizmo.onDragEnd(() => {
       renderer.sync(state);
@@ -96,13 +90,19 @@ export function createElementPanel(
           gizmo.attach(mesh);
           renderer.setSelected(selectedId);
         }
+        const updatedEl = state.elements.find((el) => el.id === selectedId);
+        if (updatedEl !== undefined) {
+          controls.bind(updatedEl, (updated) => {
+            commit(updateElement(state, updated));
+          });
+        }
       }
     });
   }
 
   function commit(newState: ElementStoreData): void {
     state = newState;
-    save(state);
+    saveProject({ ...project, elements: state.elements, updated_at: new Date().toISOString() });
     renderer.sync(state);
     renderList(state, elementsFolder, () => selectedId, onSelect, onRemove);
     if (transformGizmo !== undefined && selectedId !== undefined) {

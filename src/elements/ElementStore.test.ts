@@ -16,6 +16,7 @@ const makeEl = (id: string, ch: readonly SceneElement[] = []): SceneElement => (
   parametric_attributes: [],
   fixed_attributes: [],
   origin_attributes: [],
+  rotation_attributes: [],
   child_elements: ch,
 });
 

@@ -15,6 +15,7 @@ function makeElementWith(type: 'boolean' | 'color', value: string): SceneElement
     label: 'Test',
     description: '',
     origin_attributes: [],
+    rotation_attributes: [],
     parametric_attributes: [
       {
         id: 'a1',
@@ -51,7 +52,7 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(0);
   });
 
-  it('bind twice keeps only 6 children', () => {
+  it('bind twice keeps only 8 children', () => {
     const folder = makeFolder();
     const controls = createElementControls(folder);
     controls.bind(createBox(), () => {
@@ -60,7 +61,7 @@ describe('createElementControls', () => {
     controls.bind(createBox(), () => {
       return;
     });
-    expect(folder.children.length).toBe(6);
+    expect(folder.children.length).toBe(8);
   });
 
   it('onChange called with updated element when number input changes', () => {
@@ -108,12 +109,12 @@ describe('createElementControls', () => {
     expect(folder.children.length).toBe(2);
   });
 
-  it('bind(box) adds 6 children to folder (1 Name + 4 parametric + 1 fixed)', () => {
+  it('bind(box) adds 8 children to folder (1 Name + 4 parametric + 1 fixed + 2 folders)', () => {
     const folder = makeFolder();
     createElementControls(folder).bind(createBox(), () => {
       return;
     });
-    expect(folder.children.length).toBe(6);
+    expect(folder.children.length).toBe(8);
   });
 
   it('onChange called with updated label when Name input changes', () => {
