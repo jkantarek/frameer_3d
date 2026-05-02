@@ -8,3 +8,4 @@ export {
   saveRegistry,
 } from './ProjectStore.js';
 export { clearActiveProjectId, getActiveProjectId, setActiveProjectId } from './ProjectRouter.js';
+export { resolveOrCreateProject } from './ProjectBootstrap.js';

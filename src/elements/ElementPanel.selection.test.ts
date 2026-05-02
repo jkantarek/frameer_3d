@@ -4,10 +4,17 @@ import { Pane } from 'tweakpane';
 import type { FolderApi } from 'tweakpane';
 import type { SceneRenderer } from '../scene/SceneRenderer.js';
 import { SceneManager } from '../scene/SceneManager.js';
+import type { SceneElement } from './ElementTypes.js';
 import { createBox, createSphere } from './PrimitiveFactory.js';
 import { createElementPanel } from './ElementPanel.js';
 
-const KEY = 'frameer3d.v1.elements';
+const PROJECT_ID = 'test-project-id';
+
+function seedProject(...elements: SceneElement[]): void {
+  const now = new Date().toISOString();
+  const proj = { id: PROJECT_ID, name: 'Test', created_at: now, updated_at: now, elements };
+  localStorage.setItem(`frameer3d.v1.project.${PROJECT_ID}`, JSON.stringify(proj));
+}
 
 class MockSceneRenderer implements SceneRenderer {
   render(): void {
@@ -28,10 +35,9 @@ function makeFolder(): FolderApi {
 
 describe('createElementPanel — selection', () => {
   it('clicking a list row sets aria-selected and binds controls', () => {
-    const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    seedProject(createBox());
     const folder = makeFolder();
-    const panel = createElementPanel(document.createElement('div'), makeSm(), folder);
+    const panel = createElementPanel(document.createElement('div'), makeSm(), folder, PROJECT_ID);
     const el = panel.getElement().querySelector<HTMLElement>('[data-element-id]');
     el?.click();
     expect(el?.getAttribute('aria-selected')).toBe('true');
@@ -40,11 +46,9 @@ describe('createElementPanel — selection', () => {
   });
 
   it('clicking a second row deselects the first', () => {
-    const boxEl = createBox();
-    const sphereEl = createSphere();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl, sphereEl] }));
+    seedProject(createBox(), createSphere());
     const folder = makeFolder();
-    const panel = createElementPanel(document.createElement('div'), makeSm(), folder);
+    const panel = createElementPanel(document.createElement('div'), makeSm(), folder, PROJECT_ID);
     const elements = panel.getElement().querySelectorAll<HTMLElement>('[data-element-id]');
     elements[0]?.click();
     elements[1]?.click();
@@ -55,10 +59,10 @@ describe('createElementPanel — selection', () => {
 
   it('onChange from binding updates geometry in scene', () => {
     const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    seedProject(boxEl);
     const sm = makeSm();
     const folder = makeFolder();
-    const panel = createElementPanel(document.createElement('div'), sm, folder);
+    const panel = createElementPanel(document.createElement('div'), sm, folder, PROJECT_ID);
     panel.getElement().querySelector<HTMLElement>('[data-element-id]')?.click();
     // Index 1: first number input (geometry.width) — index 0 is the Name text input
     const inputs = folder.element.querySelectorAll<HTMLInputElement>('input');

@@ -4,11 +4,18 @@ import { Pane } from 'tweakpane';
 import type { FolderApi } from 'tweakpane';
 import type { SceneRenderer } from '../scene/SceneRenderer.js';
 import { SceneManager } from '../scene/SceneManager.js';
-import { load } from './ElementStore.js';
+import { loadProject } from '../project/index.js';
+import type { SceneElement } from './ElementTypes.js';
 import { createBox } from './PrimitiveFactory.js';
 import { createElementPanel } from './ElementPanel.js';
 
-const KEY = 'frameer3d.v1.elements';
+const PROJECT_ID = 'test-project-id';
+
+function seedProject(...elements: SceneElement[]): void {
+  const now = new Date().toISOString();
+  const proj = { id: PROJECT_ID, name: 'Test', created_at: now, updated_at: now, elements };
+  localStorage.setItem(`frameer3d.v1.project.${PROJECT_ID}`, JSON.stringify(proj));
+}
 
 class MockSceneRenderer implements SceneRenderer {
   render(): void {
@@ -29,13 +36,13 @@ function makeFolder(): FolderApi {
 
 function clickPicker(sm: SceneManager, label: string): string {
   localStorage.clear();
-  const panel = createElementPanel(document.createElement('div'), sm, makeFolder());
+  const panel = createElementPanel(document.createElement('div'), sm, makeFolder(), PROJECT_ID);
   panel.getElement().querySelector<HTMLElement>('#elements-add-btn')?.click();
   const btns = panel.getElement().querySelectorAll<HTMLButtonElement>('#elements-picker button');
   Array.from(btns)
     .find((b) => b.textContent === label)
     ?.click();
-  return load().elements[0]?.id ?? '';
+  return loadProject(PROJECT_ID)?.elements[0]?.id ?? '';
 }
 
 function findElementItem(
@@ -58,14 +65,24 @@ describe('createElementPanel — creation and removal', () => {
 
   it('no #elements-remove-btn in panel', () => {
     localStorage.clear();
-    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    const panel = createElementPanel(
+      document.createElement('div'),
+      makeSm(),
+      makeFolder(),
+      PROJECT_ID,
+    );
     expect(panel.getElement().querySelector('#elements-remove-btn')).toBeNull();
   });
 
   it('each element row contains [data-remove-for] button', () => {
     const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
-    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    seedProject(boxEl);
+    const panel = createElementPanel(
+      document.createElement('div'),
+      makeSm(),
+      makeFolder(),
+      PROJECT_ID,
+    );
     const removeBtn = panel
       .getElement()
       .querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`);
@@ -75,8 +92,13 @@ describe('createElementPanel — creation and removal', () => {
 
   it('[data-remove-for] button is hidden by default', () => {
     const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
-    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    seedProject(boxEl);
+    const panel = createElementPanel(
+      document.createElement('div'),
+      makeSm(),
+      makeFolder(),
+      PROJECT_ID,
+    );
     const removeBtn = panel
       .getElement()
       .querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`);
@@ -86,8 +108,13 @@ describe('createElementPanel — creation and removal', () => {
 
   it('[data-remove-for] button is visible after row is selected', () => {
     const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
-    const panel = createElementPanel(document.createElement('div'), makeSm(), makeFolder());
+    seedProject(boxEl);
+    const panel = createElementPanel(
+      document.createElement('div'),
+      makeSm(),
+      makeFolder(),
+      PROJECT_ID,
+    );
     findElementItem(panel, boxEl.id)?.click();
     const removeBtn = panel
       .getElement()
@@ -98,9 +125,9 @@ describe('createElementPanel — creation and removal', () => {
 
   it('clicking [data-remove-for] removes element from list and scene', () => {
     const boxEl = createBox();
-    localStorage.setItem(KEY, JSON.stringify({ elements: [boxEl] }));
+    seedProject(boxEl);
     const sm = makeSm();
-    const panel = createElementPanel(document.createElement('div'), sm, makeFolder());
+    const panel = createElementPanel(document.createElement('div'), sm, makeFolder(), PROJECT_ID);
     findElementItem(panel, boxEl.id)?.click();
     panel.getElement().querySelector<HTMLButtonElement>(`[data-remove-for="${boxEl.id}"]`)?.click();
     expect(panel.getElement().querySelectorAll('[data-element-id]').length).toBe(0);

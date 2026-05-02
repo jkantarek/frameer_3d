@@ -8,10 +8,18 @@ import { createElementPanel } from './elements/index.js';
 import { applyTheme, loadSettings } from './system/SystemSettings.js';
 import { createSystemPanel } from './system/SystemPanel.js';
 import { createGizmoToolbar } from './scene/GizmoToolbar.js';
+import {
+  resolveOrCreateProject,
+  createProject,
+  saveProject,
+  setActiveProjectId,
+  loadRegistry,
+} from './project/index.js';
 
 export function main(): void {
   const settings = loadSettings();
   applyTheme(settings);
+  const project = resolveOrCreateProject();
 
   const canvas = document.getElementById('viewport');
   if (!(canvas instanceof HTMLCanvasElement)) {
@@ -41,12 +49,33 @@ export function main(): void {
     throw new Error('Canvas has no parent HTMLElement');
   }
 
-  createElementPanel(viewportContainer, sceneManager, elementFolder, viewport.getTransformGizmo());
+  createElementPanel(
+    viewportContainer,
+    sceneManager,
+    elementFolder,
+    project.id,
+    viewport.getTransformGizmo(),
+  );
 
   createGizmoToolbar(viewportContainer, viewport.getTransformGizmo());
 
-  createSystemPanel(settings, (theme) => {
-    sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e');
+  createSystemPanel(settings, loadRegistry(), project.id, {
+    onThemeChange: (theme) => {
+      sceneManager.setBackground(theme === 'light' ? '#e8e8ec' : '#1a1a2e');
+    },
+    onNewProject: () => {
+      const p = createProject();
+      saveProject(p);
+      setActiveProjectId(p.id);
+      location.reload();
+    },
+    onSelectProject: (id) => {
+      setActiveProjectId(id);
+      location.reload();
+    },
+    onRenameProject: (_id, _name) => {
+      return;
+    },
   });
 
   void loadOcct().catch((err: unknown) => {
