@@ -90,18 +90,18 @@ Select a box → switch to rotate mode → `rotation_attributes` on element have
 
 ### P003F001 — PrimitiveFactory rotation_attributes initialization
 
-- [ ] P003F001T001 Update all three factory function `@example` doctests in `src/elements/PrimitiveFactory.ts` (`createBox`, `createSphere`, `createCylinder`, `createPlane`) to additionally assert: `el.rotation_attributes.length === 3`, each of `rotation.x`, `rotation.y`, `rotation.z` has `dimension_uri_value === 0` — `pnpm test` must **FAIL** (RED: factories don't initialize `rotation_attributes` yet)
-- [ ] P003F001T002 Add `rotationAttrs()` helper returning 3 `OriginAttribute` entries (keys `rotation.x`, `rotation.y`, `rotation.z`, values `0`) in `src/elements/PrimitiveFactory.ts`; add `rotation_attributes: rotationAttrs()` to the returned objects of `createBox`, `createSphere`, `createCylinder`, and `createPlane` — run `pnpm test` (GREEN)
+- [x] P003F001T001 Update all three factory function `@example` doctests in `src/elements/PrimitiveFactory.ts` (`createBox`, `createSphere`, `createCylinder`, `createPlane`) to additionally assert: `el.rotation_attributes.length === 3`, each of `rotation.x`, `rotation.y`, `rotation.z` has `dimension_uri_value === 0` — `pnpm test` must **FAIL** (RED: factories don't initialize `rotation_attributes` yet)
+- [x] P003F001T002 Add `rotationAttrs()` helper returning 3 `OriginAttribute` entries (keys `rotation.x`, `rotation.y`, `rotation.z`, values `0`) in `src/elements/PrimitiveFactory.ts`; add `rotation_attributes: rotationAttrs()` to the returned objects of `createBox`, `createSphere`, `createCylinder`, and `createPlane` — run `pnpm test` (GREEN)
 
 ### P003F002 — ElementRenderer rotation sync
 
-- [ ] P003F002T001 [P] Write `src/elements/ElementRenderer.rotation.test.ts` asserting: after `sync()` with an element whose `rotation_attributes` have `rotation.x=1.0`, `rotation.y=0.5`, `rotation.z=0.3`, the corresponding Three.js mesh has `mesh.rotation.x ≈ 1.0`, `mesh.rotation.y ≈ 0.5`, `mesh.rotation.z ≈ 0.3`; also assert that `sync()` with empty `rotation_attributes: []` sets mesh rotation to 0/0/0 without throwing — `pnpm test` must **FAIL** (RED)
-- [ ] P003F002T002 [P] Add `getRotation(element: SceneElement, key: string): number` helper (returns `element.rotation_attributes.find(a => a.dimension_uri_key === key)?.dimension_uri_value ?? 0`) and call `mesh.rotation.set(getRotation(el,'rotation.x'), getRotation(el,'rotation.y'), getRotation(el,'rotation.z'))` inside the `syncElement` function in `src/elements/ElementRenderer.ts` — run `pnpm test` (GREEN)
+- [x] P003F002T001 [P] Write `src/elements/ElementRenderer.rotation.test.ts` asserting: after `sync()` with an element whose `rotation_attributes` have `rotation.x=1.0`, `rotation.y=0.5`, `rotation.z=0.3`, the corresponding Three.js mesh has `mesh.rotation.x ≈ 1.0`, `mesh.rotation.y ≈ 0.5`, `mesh.rotation.z ≈ 0.3`; also assert that `sync()` with empty `rotation_attributes: []` sets mesh rotation to 0/0/0 without throwing — `pnpm test` must **FAIL** (RED)
+- [x] P003F002T002 [P] Add `getRotation(element: SceneElement, key: string): number` helper (returns `element.rotation_attributes.find(a => a.dimension_uri_key === key)?.dimension_uri_value ?? 0`) and call `mesh.rotation.set(getRotation(el,'rotation.x'), getRotation(el,'rotation.y'), getRotation(el,'rotation.z'))` inside the `syncElement` function in `src/elements/ElementRenderer.ts` — run `pnpm test` (GREEN)
 
 ### P003F003 — ElementPanel rotation capture in onObjectChange
 
-- [ ] P003F003T001 Update `src/elements/ElementPanel.gizmo.test.ts` to add an assertion that after the gizmo fires `objectChange` with `obj.rotation.x=0.7`, `obj.rotation.y=0.4`, `obj.rotation.z=0.2`, the saved element's `rotation_attributes` contains those values — `pnpm test` must **FAIL** (RED: capture doesn't exist yet)
-- [ ] P003F003T002 Extend the `onObjectChange` handler inside `createElementPanel` in `src/elements/ElementPanel.ts` to update `rotation_attributes` by mapping over `el.rotation_attributes` and substituting `dimension_uri_value` for each key (`rotation.x`, `rotation.y`, `rotation.z`) from `obj.rotation.{x,y,z}` per data-model.md §7; run `pnpm test` (GREEN)
+- [x] P003F003T001 Update `src/elements/ElementPanel.gizmo.test.ts` to add an assertion that after the gizmo fires `objectChange` with `obj.rotation.x=0.7`, `obj.rotation.y=0.4`, `obj.rotation.z=0.2`, the saved element's `rotation_attributes` contains those values — `pnpm test` must **FAIL** (RED: capture doesn't exist yet)
+- [x] P003F003T002 Extend the `onObjectChange` handler inside `createElementPanel` in `src/elements/ElementPanel.ts` to update `rotation_attributes` by mapping over `el.rotation_attributes` and substituting `dimension_uri_value` for each key (`rotation.x`, `rotation.y`, `rotation.z`) from `obj.rotation.{x,y,z}` per data-model.md §7; run `pnpm test` (GREEN)
 
 ### P003F004 — GizmoToolbar component
 

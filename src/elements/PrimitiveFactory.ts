@@ -86,6 +86,10 @@ export function createBox(label?: string): SceneElement {
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'geometry.radius')?.attribute_value).toBe('1');
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'material.color')?.attribute_value).toBe('#888888');
  * expect(el.origin_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.x')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.y')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.z')?.dimension_uri_value).toBe(0);
  * expect(createSphere('Custom').label).toBe('Custom');
  * ```
  */
@@ -99,7 +103,7 @@ export function createSphere(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'sphere' },
     ],
     origin_attributes: originAttrs(),
-    rotation_attributes: [],
+    rotation_attributes: rotationAttrs(),
     child_elements: [],
   };
 }
@@ -118,6 +122,10 @@ export function createSphere(label?: string): SceneElement {
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'geometry.height')?.attribute_value).toBe('2');
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'material.color')?.attribute_value).toBe('#888888');
  * expect(el.origin_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.x')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.y')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.z')?.dimension_uri_value).toBe(0);
  * expect(createCylinder('Custom').label).toBe('Custom');
  * ```
  */
@@ -135,7 +143,7 @@ export function createCylinder(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'cylinder' },
     ],
     origin_attributes: originAttrs(),
-    rotation_attributes: [],
+    rotation_attributes: rotationAttrs(),
     child_elements: [],
   };
 }
@@ -154,6 +162,10 @@ export function createCylinder(label?: string): SceneElement {
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'geometry.height')?.attribute_value).toBe('2');
  * expect(el.parametric_attributes.find(a => a.attribute_uri_key === 'material.color')?.attribute_value).toBe('#888888');
  * expect(el.origin_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.length).toBe(3);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.x')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.y')?.dimension_uri_value).toBe(0);
+ * expect(el.rotation_attributes.find(a => a.dimension_uri_key === 'rotation.z')?.dimension_uri_value).toBe(0);
  * expect(createPlane('Custom').label).toBe('Custom');
  * ```
  */
@@ -171,7 +183,7 @@ export function createPlane(label?: string): SceneElement {
       { id: ulid(), attribute_uri_key: 'geometry.type', attribute_value: 'plane' },
     ],
     origin_attributes: originAttrs(),
-    rotation_attributes: [],
+    rotation_attributes: rotationAttrs(),
     child_elements: [],
   };
 }

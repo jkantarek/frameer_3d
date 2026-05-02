@@ -31,6 +31,11 @@ function getOrigin(element: SceneElement, key: string): number {
   return attr?.dimension_uri_value ?? 0;
 }
 
+function getRotation(element: SceneElement, key: string): number {
+  const attr = element.rotation_attributes.find((a) => a.dimension_uri_key === key);
+  return attr?.dimension_uri_value ?? 0;
+}
+
 function buildGeometry(element: SceneElement): THREE.BufferGeometry {
   const typeAttr = element.fixed_attributes.find((a) => a.attribute_uri_key === 'geometry.type');
   const type = typeAttr?.attribute_value;
@@ -70,6 +75,11 @@ function syncElement(element: SceneElement, sceneManager: SceneManager): void {
     getOrigin(element, 'position.x'),
     getOrigin(element, 'position.y'),
     getOrigin(element, 'position.z'),
+  );
+  mesh.rotation.set(
+    getRotation(element, 'rotation.x'),
+    getRotation(element, 'rotation.y'),
+    getRotation(element, 'rotation.z'),
   );
   sceneManager.addObject(element.id, mesh);
   for (const child of element.child_elements) {

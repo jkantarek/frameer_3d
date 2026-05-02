@@ -8,6 +8,7 @@ import { createElementRenderer } from './ElementRenderer.js';
 import { createElementControls } from './ElementControls.js';
 import { createBox, createSphere, createCylinder, createPlane } from './PrimitiveFactory.js';
 import { renderList } from './ElementPanelList.js';
+import { applyObjTransform } from './ElementPanelSync.js';
 
 export interface ElementPanelApi {
   getElement(): HTMLElement;
@@ -70,20 +71,7 @@ export function createElementPanel(
         /* v8 ignore start */
         if (obj === undefined) return el;
         /* v8 ignore stop */
-        return {
-          ...el,
-          origin_attributes: el.origin_attributes.map((a) => {
-            if (a.dimension_uri_key === 'position.x')
-              return { ...a, dimension_uri_value: obj.position.x };
-            if (a.dimension_uri_key === 'position.y')
-              return { ...a, dimension_uri_value: obj.position.y };
-            /* v8 ignore start */
-            if (a.dimension_uri_key === 'position.z')
-              return { ...a, dimension_uri_value: obj.position.z };
-            return a;
-            /* v8 ignore stop */
-          }),
-        };
+        return applyObjTransform(el, obj);
       });
       state = { elements: newElements };
       save(state);

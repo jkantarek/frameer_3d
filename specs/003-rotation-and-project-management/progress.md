@@ -57,3 +57,27 @@ Started: 2026-05-02 08:29:53
 - Ternary true branch must be tested directly; missing-field tests only cover the false branch.
 - `no-unnecessary-type-assertion` fires when `let s: Storage` is in scope and `as unknown as Storage` is used in `beforeEach`; inline storage creation per test avoids this.
 ---
+## Iteration 3 - 2026-05-02T09:10:00-05:00
+**User Story**: P003F001–F003 — PrimitiveFactory rotation init, ElementRenderer rotation sync, ElementPanel rotation capture
+**Tasks Completed**: 
+- [x] P003F001T001: Add rotation_attributes assertions to sphere/cylinder/plane doctests (RED)
+- [x] P003F001T002: Initialize rotation_attributes: rotationAttrs() in sphere/cylinder/plane factories (GREEN)
+- [x] P003F002T001: Write ElementRenderer.rotation.test.ts (RED)
+- [x] P003F002T002: Add getRotation() helper + mesh.rotation.set() in syncElement (GREEN)
+- [x] P003F003T001: Update ElementPanel.gizmo.test.ts with rotation assertion (RED)
+- [x] P003F003T002: Extract applyObjTransform to ElementPanelSync.ts; simplify onObjectChange handler (GREEN)
+**Tasks Remaining in Story**: P003F004–F006 (GizmoToolbar, ElementControls folders, CSS+main wiring)
+**Files Changed**: 
+- src/elements/PrimitiveFactory.ts (rotation_attributes init for sphere/cylinder/plane)
+- src/elements/ElementRenderer.ts (getRotation helper + rotation sync)
+- src/elements/ElementRenderer.rotation.test.ts (new)
+- src/elements/ElementPanel.ts (import applyObjTransform + simplified onObjectChange)
+- src/elements/ElementPanel.gizmo.test.ts (rotation assertion added)
+- src/elements/ElementPanelSync.ts (new — applyObjTransform)
+- specs/003-rotation-and-project-management/tasks.md
+**Learnings**:
+- Doctests cannot use `import` statements — the current module's exports are already in scope; construct fixtures inline.
+- `@typescript-eslint/consistent-type-definitions` requires `interface` not `type` for object shapes.
+- Extracting to a new module (ElementPanelSync.ts) resolves the 150-line file limit and improves testability via the public `applyObjTransform` API.
+- Inline doctest covers the unknown-key fallback branch (`return a`) without `/* v8 ignore */` by passing an attribute with key `'unknown'`.
+---

@@ -27,7 +27,6 @@ function makeSm(): SceneManager {
 function makeFolder(): FolderApi {
   return new Pane({ container: document.createElement('div') }).addFolder({ title: 'Element' });
 }
-
 class FakeGizmo implements TransformGizmoApi {
   attachedObject: THREE.Object3D | undefined;
   attachCallCount = 0;
@@ -58,7 +57,6 @@ class FakeGizmo implements TransformGizmoApi {
     return;
   }
 }
-
 describe('createElementPanel — gizmo wiring', () => {
   it('stub.attach called on row select', () => {
     const boxEl = createBox();
@@ -92,11 +90,14 @@ describe('createElementPanel — gizmo wiring', () => {
     // Trigger object change with a moved object
     const obj = sm.getObject(boxEl.id) as THREE.Mesh;
     obj.position.set(1, 2, 3);
+    obj.rotation.set(0.7, 0.4, 0.2);
     gizmo.objectChangeCb?.();
     const stored = load();
     const el = stored.elements.find((e) => e.id === boxEl.id);
     const xAttr = el?.origin_attributes.find((a) => a.dimension_uri_key === 'position.x');
     expect(xAttr?.dimension_uri_value).toBe(1);
+    const rxAttr = el?.rotation_attributes.find((a) => a.dimension_uri_key === 'rotation.x');
+    expect(rxAttr?.dimension_uri_value).toBe(0.7);
     localStorage.clear();
   });
 
