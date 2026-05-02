@@ -106,3 +106,21 @@ Started: 2026-05-02 08:29:53
 - Use makeSimpleEl() (no parametric/fixed attrs) in folder tests for deterministic input indices via querySelectorAll('input.tp-txtv_i').
 - Conditional folder creation (if origin_attributes.length > 0) keeps the child-count test for empty-attrs elements unchanged.
 ---
+---
+## Iteration 6 - 2026-05-02T10:04:00-05:00
+**User Story**: P005 — Switch Between Projects (User Story 4)
+**Tasks Completed**: 
+- [x] P005F001T001: Create SystemPanel.navigation.test.ts with 3 RED tests (per-project buttons, onSelectProject, aria-current)
+- [x] P005F001T002: Add for-loop in SystemPanel.ts iterating projectRegistry.projects; addButton per project; aria-current on active project's button element; onSelectProject callback on click
+- [x] P005F002T001: onSelectProject in main.ts already implemented (setActiveProjectId + location.reload()) — verified and marked done
+**Tasks Remaining in Story**: None — Phase 5 complete
+**Commit**: c6a10f2
+**Files Changed**: 
+- src/system/SystemPanel.ts (per-project navigation buttons loop)
+- src/system/SystemPanel.navigation.test.ts (new)
+- specs/003-rotation-and-project-management/tasks.md
+**Learnings**:
+- SystemPanel.test.ts hit the 150-line limit — created a new SystemPanel.navigation.test.ts for P005 tests
+- Tweakpane button element accessible via btn.element.querySelector('button') — use `/* v8 ignore next */` on the optional-chaining null guard since Tweakpane always provides the button element
+- P005F002T001 was already implemented in P004F004T001 wiring iteration; just verified and marked done
+---

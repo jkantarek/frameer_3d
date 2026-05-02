@@ -216,9 +216,9 @@ Given a `ProjectRegistry` with 2 entries, `createSystemPanel` renders 2 navigati
 
 ### P006F001 — Coverage & quality gate pass
 
-- [ ] P006F001T001 [P] Run `pnpm typecheck` — fix any remaining TypeScript errors
-- [ ] P006F001T002 [P] Run `pnpm lint` — fix any remaining ESLint warnings (check `max-lines` on all new files; if `src/system/SystemPanel.ts` exceeds 150 non-comment lines, extract the Projects folder to `src/system/ProjectsFolder.ts`)
-- [ ] P006F001T003 [P] Run `pnpm test:coverage` — if any metric is below 98%, identify uncovered branches (likely defensive fallbacks in ProjectStore or ProjectBootstrap) and add targeted test cases; run until all thresholds pass
+- [x] P006F001T001 [P] Run `pnpm typecheck` — fix any remaining TypeScript errors
+- [x] P006F001T002 [P] Run `pnpm lint` — fix any remaining ESLint warnings (check `max-lines` on all new files; if `src/system/SystemPanel.ts` exceeds 150 non-comment lines, extract the Projects folder to `src/system/ProjectsFolder.ts`)
+- [x] P006F001T003 [P] Run `pnpm test:coverage` — if any metric is below 98%, identify uncovered branches (likely defensive fallbacks in ProjectStore or ProjectBootstrap) and add targeted test cases; run until all thresholds pass
 
 ### Exit Criteria: Phase 6
 
